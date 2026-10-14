@@ -164,7 +164,7 @@ export function InquiryDrawer({
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6">
                   Thank you, <span className="font-bold text-[var(--text-primary)]">{formData.name}</span>.
-                  Iris, Raka, and the Epiphrame collective have received your project inquiry for{' '}
+                  Ayesha, Zeon, Raka, Bima, and the Epiphrame collective have received your project inquiry for{' '}
                   <span className="font-semibold text-[var(--text-primary)]">{formData.company}</span>.
                   We&apos;ll get back to you within 24 hours with sketch concepts and palette ideas.
                 </p>
