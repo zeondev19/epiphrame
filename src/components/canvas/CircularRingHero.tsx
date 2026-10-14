@@ -6,7 +6,7 @@ import { Html, RoundedBox, useTexture, useVideoTexture } from '@react-three/drei
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 
-function VideoCardMaterial({ src }: { src: string }) {
+function VideoPlaneMaterial({ src }: { src: string }) {
   const texture = useVideoTexture(src, {
     unsuspend: 'canplay',
     muted: true,
@@ -14,13 +14,14 @@ function VideoCardMaterial({ src }: { src: string }) {
     start: true,
     playsInline: true,
   });
-  return <meshBasicMaterial map={texture} toneMapped={false} />;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} />;
 }
 
-function ImageCardMaterial({ src }: { src: string }) {
+function ImagePlaneMaterial({ src }: { src: string }) {
   const texture = useTexture(src);
   texture.colorSpace = THREE.SRGBColorSpace;
-  return <meshBasicMaterial map={texture} toneMapped={false} />;
+  return <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} />;
 }
 
 function RingCard({
@@ -47,8 +48,8 @@ function RingCard({
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
-    const targetScale = isActive ? 1.45 : anyActive ? 0.88 : 1.0;
-    const targetZOffset = isActive ? 0.85 : 0;
+    const targetScale = isActive ? 1.42 : anyActive ? 0.88 : 1.0;
+    const targetZOffset = isActive ? 0.9 : 0;
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
@@ -60,6 +61,8 @@ function RingCard({
     meshRef.current.position.z = THREE.MathUtils.damp(meshRef.current.position.z, forwardZ, 7, delta);
   });
 
+  const animatedSrc = item.videoTextureSrc;
+
   return (
     <group
       ref={meshRef}
@@ -70,26 +73,22 @@ function RingCard({
         onSelect(index);
       }}
     >
-      <RoundedBox args={[1.65, 2.25, 0.06]} radius={0.08} smoothness={4}>
-        <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
-          {item.mediaFormat === 'video' ? (
-            <VideoCardMaterial src={item.src} />
-          ) : (
-            <ImageCardMaterial src={item.posterSrc} />
-          )}
-        </Suspense>
+      {/* Thin Charcoal Backing Frame */}
+      <RoundedBox args={[1.68, 2.24, 0.04]} radius={0.06} smoothness={4}>
+        <meshBasicMaterial color="#211529" />
       </RoundedBox>
 
-      {/* Native looping GIF overlay when mediaFormat === 'gif' */}
-      {item.mediaFormat === 'gif' && (
-        <Html transform distanceFactor={3.2} position={[0, 0, 0.04]} pointerEvents="none" occlude>
-          <img
-            src={item.src}
-            alt={item.title}
-            className="w-40 h-56 object-cover rounded-xl shadow-md select-none"
-          />
-        </Html>
-      )}
+      {/* Full-Bleed Front & Back Artwork Plane (Standard 0..1 UVs = Zero White Margin!) */}
+      <mesh position={[0, 0, 0.025]}>
+        <planeGeometry args={[1.6, 2.14]} />
+        <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
+          {animatedSrc ? (
+            <VideoPlaneMaterial src={animatedSrc} />
+          ) : (
+            <ImagePlaneMaterial src={item.posterSrc} />
+          )}
+        </Suspense>
+      </mesh>
 
       {/* Floating Yellow Flower Mascot Accent perched on the active card */}
       {isActive && (
