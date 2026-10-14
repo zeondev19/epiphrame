@@ -82,7 +82,7 @@ function RingCard({
 
       {/* Native looping GIF overlay when mediaFormat === 'gif' */}
       {item.mediaFormat === 'gif' && (
-        <Html transform distanceFactor={3.2} position={[0, 0, 0.04]} pointerEvents="none">
+        <Html transform distanceFactor={3.2} position={[0, 0, 0.04]} pointerEvents="none" occlude>
           <img
             src={item.src}
             alt={item.title}
@@ -164,13 +164,24 @@ function RingStage({
 
 export default function CircularRingHero() {
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollRotationRef = useRef<number>(0);
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      // Scrolling down turns ring left; scrolling up turns ring right
+      // Only spin ring when user is in the hero section
+      if (typeof window !== 'undefined' && window.scrollY > window.innerHeight) return;
       scrollRotationRef.current += e.deltaY * 0.0022;
     };
     window.addEventListener('wheel', onWheel, { passive: true });
@@ -178,6 +189,7 @@ export default function CircularRingHero() {
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     isDraggingRef.current = true;
     startXRef.current = e.clientX;
   };
@@ -189,8 +201,13 @@ export default function CircularRingHero() {
     scrollRotationRef.current += deltaX * 0.004;
   };
 
-  const handlePointerUp = () => {
-    isDraggingRef.current = false;
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (isDraggingRef.current) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      } catch {}
+      isDraggingRef.current = false;
+    }
   };
 
   const activeItem = activeIndex !== null ? RING_SHOWCASE_ITEMS[activeIndex] : null;
@@ -201,6 +218,7 @@ export default function CircularRingHero() {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
     >
       {/* Top Hero Instruction Pill */}
       <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center px-4 w-full max-w-lg">
@@ -210,7 +228,10 @@ export default function CircularRingHero() {
       </div>
 
       <Canvas
-        camera={{ position: [0, 0.35, 8.2], fov: 38 }}
+        camera={{
+          position: [0, 0.35, isMobile ? 10.8 : 8.2],
+          fov: isMobile ? 44 : 38,
+        }}
         dpr={[1, 1.5]}
         onPointerMissed={() => setActiveIndex(null)}
       >

@@ -6,10 +6,13 @@ import { ARTISTS_ROSTER, ArtistProfile } from '@/data/siteContent';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { InquiryDrawer } from '@/components/ui/InquiryDrawer';
+import { InteractiveScrollRuler } from '@/components/ui/InteractiveScrollRuler';
 import { SketchToFinalSlider } from '@/components/artists/SketchToFinalSlider';
 import {
   Play,
   Pause,
+  Volume2,
+  VolumeX,
   Award,
   Sparkles,
   ArrowUpRight,
@@ -24,6 +27,7 @@ export default function ArtistsPage() {
   const [selectedArtistId, setSelectedArtistId] = useState<string>(ARTISTS_ROSTER[0].id);
   const [activeVaultIndex, setActiveVaultIndex] = useState<number>(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [inquiryOpen, setInquiryOpen] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -66,12 +70,23 @@ export default function ArtistsPage() {
     }
   };
 
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    const nextMuted = !isMuted;
+    videoRef.current.muted = nextMuted;
+    setIsMuted(nextMuted);
+  };
+
   const currentVaultItem = selectedArtist.vaultItems[activeVaultIndex] || selectedArtist.vaultItems[0];
 
   return (
     <main className="min-h-screen bg-[var(--bg-surface)] text-[var(--text-primary)] relative select-none">
       {/* Top Navbar */}
       <Navbar onOpenInquiry={() => setInquiryOpen(true)} />
+
+      {/* Right Edge Interactive 40-Tick Scroll Ruler */}
+      <InteractiveScrollRuler />
 
       {/* Main Content Container */}
       <div className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto px-6">
@@ -162,6 +177,7 @@ export default function ArtistsPage() {
             {/* Interactive Slider Component */}
             <div className="flex-1 flex items-center">
               <SketchToFinalSlider
+                key={selectedArtist.id}
                 sketchSrc={selectedArtist.sketchComparison.sketchSrc}
                 finalSrc={selectedArtist.sketchComparison.finalSrc}
                 title={selectedArtist.sketchComparison.title}
@@ -195,10 +211,12 @@ export default function ArtistsPage() {
                 <>
                   <video
                     ref={videoRef}
+                    key={`${selectedArtist.id}-${currentVaultItem.src}`}
                     src={currentVaultItem.src}
                     poster={currentVaultItem.posterSrc}
                     playsInline
                     loop
+                    muted={isMuted}
                     className="w-full h-full object-cover"
                     onClick={toggleVideo}
                   />
@@ -216,15 +234,27 @@ export default function ArtistsPage() {
                     </button>
                   )}
 
+                  {/* Video Controls overlay when playing */}
                   {isVideoPlaying && (
-                    <button
-                      type="button"
-                      onClick={toggleVideo}
-                      className="absolute bottom-4 right-4 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-colors"
-                      aria-label="Pause speedpaint"
-                    >
-                      <Pause className="w-4 h-4 fill-current" />
-                    </button>
+                    <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-colors"
+                        aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+                        title={isMuted ? 'Unmute audio' : 'Mute audio'}
+                      >
+                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleVideo}
+                        className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-colors"
+                        aria-label="Pause speedpaint"
+                      >
+                        <Pause className="w-4 h-4 fill-current" />
+                      </button>
+                    </div>
                   )}
                 </>
               ) : currentVaultItem.mediaFormat === 'gif' ? (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Sun, Moon, Menu, X, ArrowUpRight } from 'lucide-react';
 
 interface NavbarProps {
@@ -9,6 +10,8 @@ interface NavbarProps {
 }
 
 export function Navbar({ onOpenInquiry }: NavbarProps) {
+  const pathname = usePathname();
+  const isArtists = pathname === '/artists';
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -73,7 +76,11 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
           </Link>
           <Link
             href="/artists"
-            className="hover:text-[#1388E5] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#1388E5] hover:after:w-full after:transition-all"
+            className={`transition-colors relative py-1 ${
+              isArtists
+                ? 'text-[#1388E5] font-black after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#1388E5]'
+                : 'hover:text-[#1388E5] after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#1388E5] hover:after:w-full after:transition-all'
+            }`}
           >
             ARTISTS
           </Link>

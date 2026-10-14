@@ -24,9 +24,9 @@ export function SketchToFinalSlider({
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-[var(--border-hairline)] select-none cursor-ew-resize bg-white shadow-md group"
+      className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-[var(--border-hairline)] select-none cursor-ew-resize bg-white shadow-md group touch-none"
       onPointerMove={(e) => {
-        if (e.buttons !== 1) return;
+        if (e.pointerType !== 'touch' && e.buttons !== 1) return;
         handleMove(e.clientX);
       }}
       onClick={(e) => {

@@ -1,8 +1,74 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem } from '@/data/siteContent';
-import { Play, Pause, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ExternalLink, ArrowUpRight } from 'lucide-react';
+
+function CampaignVideoPlayer({ src, posterSrc, title }: { src: string; posterSrc: string; title: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    const next = !videoRef.current.muted;
+    videoRef.current.muted = next;
+    setIsMuted(next);
+  };
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        src={src}
+        poster={posterSrc}
+        playsInline
+        muted={isMuted}
+        loop
+        autoPlay
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="p-2 rounded-full bg-black/60 text-white hover:bg-[#1388E5] transition-colors backdrop-blur-sm"
+          aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+          title={isMuted ? 'Unmute audio' : 'Mute audio'}
+        >
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={togglePlay}
+          className="p-2 rounded-full bg-black/60 text-white hover:bg-[#1388E5] transition-colors backdrop-blur-sm"
+          aria-label={isPlaying ? 'Pause video' : 'Play video'}
+          title={isPlaying ? 'Pause video' : 'Play video'}
+        >
+          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        </button>
+      </div>
+      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white font-mono text-[10px] uppercase font-bold tracking-wider">
+        VIDEO REEL · 30FPS
+      </span>
+    </>
+  );
+}
 
 interface SelectedCampaignsProps {
   onOpenInquiry?: (projectType?: string, artistId?: string) => void;
@@ -10,7 +76,6 @@ interface SelectedCampaignsProps {
 
 export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
   const [filter, setFilter] = useState<'all' | 'cycle' | 'hangjam' | 'studio'>('all');
-  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
   const filteredItems = RING_SHOWCASE_ITEMS.filter((item) => {
     if (filter === 'cycle') return item.client.toLowerCase().includes('cycle');
@@ -98,7 +163,6 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
           {filteredItems.map((item: RingShowcaseItem) => {
             const isVideo = item.mediaFormat === 'video';
             const isGif = item.mediaFormat === 'gif';
-            const isPlaying = playingVideoId === item.id;
 
             return (
               <div
@@ -109,40 +173,11 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                 {/* Media Preview Stage */}
                 <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
                   {isVideo ? (
-                    <>
-                      <video
-                        src={item.src}
-                        poster={item.posterSrc}
-                        playsInline
-                        muted
-                        loop
-                        autoPlay
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const vid = e.currentTarget.previousElementSibling as HTMLVideoElement;
-                          if (vid) {
-                            if (vid.paused) {
-                              vid.play();
-                              setPlayingVideoId(item.id);
-                            } else {
-                              vid.pause();
-                              setPlayingVideoId(null);
-                            }
-                          }
-                        }}
-                        className="absolute bottom-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-[#1388E5] transition-colors backdrop-blur-sm"
-                        aria-label="Toggle playback"
-                      >
-                        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      </button>
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white font-mono text-[10px] uppercase font-bold tracking-wider">
-                        VIDEO REEL · 30FPS
-                      </span>
-                    </>
+                    <CampaignVideoPlayer
+                      src={item.src}
+                      posterSrc={item.posterSrc}
+                      title={item.title}
+                    />
                   ) : isGif ? (
                     <>
                       <img
