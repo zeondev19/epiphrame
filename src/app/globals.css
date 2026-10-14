@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-surface: #F6EDE4;       /* Warm Editorial Cream (75% of screen) */
+  --bg-card: #FFFFFF;          /* Crisp Gallery White */
+  --text-primary: #211529;     /* Deep Charcoal Ink */
+  --text-muted: #5E5466;       /* Muted Editorial Slate */
+  --border-hairline: rgba(33, 21, 41, 0.14);
+  --accent-blue: #1388E5;      /* Vibe Cobalt Blue */
+  --accent-yellow: #FFD400;    /* Pure Sun Yellow (Flower Mascot) */
+  --accent-pink: #FF66B2;      /* Bubblegum Pink */
+  --accent-green: #1E7E48;     /* Vibe Forest Green */
+  --accent-lavender: #D1CAEA;  /* Autumn Lavender */
+  --accent-coral: #C45F3F;     /* Tomato Jam */
+}
+
+[data-theme="dark"] {
+  --bg-surface: #211529;       /* Dark Disco */
+  --bg-card: #2D1E38;
+  --text-primary: #F6EDE4;
+  --text-muted: #D1CAEA;
+  --border-hairline: rgba(246, 237, 228, 0.15);
+}
