@@ -1,8 +1,8 @@
 'use client';
 
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Html, RoundedBox, useTexture, useVideoTexture } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Html, RoundedBox, ContactShadows, useTexture, useVideoTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -23,6 +23,13 @@ function ImagePlaneMaterial({ src }: { src: string }) {
   const texture = useTexture(src);
   texture.colorSpace = THREE.SRGBColorSpace;
   return <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} />;
+}
+
+function CameraRig({ isMobile }: { isMobile: boolean }) {
+  useFrame(({ camera }) => {
+    camera.lookAt(0, -0.05, 0);
+  });
+  return null;
 }
 
 function RingCard({
@@ -50,8 +57,9 @@ function RingCard({
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
-    const targetScale = isActive ? 1.42 : anyActive ? (hovered ? 0.96 : 0.88) : (hovered ? 1.06 : 1.0);
-    const targetZOffset = isActive ? 0.9 : (hovered ? 0.15 : 0);
+    // Elegant, restrained scaling matching ui-ref-hero-focused.jpg (~50-55% screen height)
+    const targetScale = isActive ? 1.20 : anyActive ? (hovered ? 0.96 : 0.88) : (hovered ? 1.05 : 1.0);
+    const targetZOffset = isActive ? 0.42 : (hovered ? 0.12 : 0);
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
@@ -76,7 +84,7 @@ function RingCard({
       position={[baseX, 0, baseZ]}
       rotation={[0, angle, 0]}
     >
-      {/* Invisible Raycast Hit Box (depth 0.25 covers front, back, and sides from any angle) */}
+      {/* Invisible Raycast Hit Box for 100% reliable click & hover targeting */}
       <mesh
         position={[0, 0, 0]}
         onClick={handleClick}
@@ -91,18 +99,18 @@ function RingCard({
           document.body.style.cursor = 'default';
         }}
       >
-        <boxGeometry args={[1.82, 2.38, 0.25]} />
+        <boxGeometry args={[1.48, 1.94, 0.2]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      {/* Thin Charcoal Backing Frame */}
-      <RoundedBox args={[1.68, 2.24, 0.04]} radius={0.06} smoothness={4} onClick={handleClick}>
+      {/* Thin Charcoal Backing Frame (1.34 x 1.80) */}
+      <RoundedBox args={[1.34, 1.80, 0.03]} radius={0.06} smoothness={4} onClick={handleClick}>
         <meshBasicMaterial color="#211529" />
       </RoundedBox>
 
-      {/* Full-Bleed Front Artwork Plane (Standard 0..1 UVs = Zero White Margin!) */}
-      <mesh position={[0, 0, 0.025]} onClick={handleClick}>
-        <planeGeometry args={[1.6, 2.14]} />
+      {/* Full-Bleed Front Artwork Plane (1.28 x 1.74) */}
+      <mesh position={[0, 0, 0.018]} onClick={handleClick}>
+        <planeGeometry args={[1.28, 1.74]} />
         <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
           {animatedSrc ? (
             <VideoPlaneMaterial src={animatedSrc} />
@@ -113,8 +121,8 @@ function RingCard({
       </mesh>
 
       {/* Full-Bleed Back Artwork Plane so cards are visible from behind */}
-      <mesh position={[0, 0, -0.025]} rotation={[0, Math.PI, 0]} onClick={handleClick}>
-        <planeGeometry args={[1.6, 2.14]} />
+      <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]} onClick={handleClick}>
+        <planeGeometry args={[1.28, 1.74]} />
         <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
           {item.posterSrc ? (
             <ImagePlaneMaterial src={item.posterSrc} />
@@ -124,10 +132,10 @@ function RingCard({
         </Suspense>
       </mesh>
 
-      {/* Floating Yellow Flower Mascot Accent perched on the active card */}
+      {/* Floating Yellow Flower Mascot Accent perched on the active card top-right */}
       {isActive && (
         <Html
-          position={[0.7, 1.05, 0.08]}
+          position={[0.52, 0.82, 0.06]}
           distanceFactor={3.2}
           pointerEvents="none"
         >
@@ -135,7 +143,7 @@ function RingCard({
             <img
               src="/assets/mascots/flower-yellow.png"
               alt="Yellow Flower Mascot Accent"
-              className="w-16 h-16 object-contain select-none pointer-events-none"
+              className="w-14 h-14 object-contain select-none pointer-events-none"
             />
           </div>
         </Html>
@@ -155,7 +163,7 @@ function RingStage({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const total = RING_SHOWCASE_ITEMS.length;
-  const radius = 4.2;
+  const radius = 3.4;
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -287,21 +295,31 @@ export default function CircularRingHero() {
 
       <Canvas
         camera={{
-          position: [0, 0.35, isMobile ? 10.8 : 8.2],
-          fov: isMobile ? 44 : 38,
+          position: [0, isMobile ? 2.3 : 1.95, isMobile ? 11.2 : 8.8],
+          fov: isMobile ? 40 : 34,
         }}
         dpr={[1, 1.5]}
       >
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[4, 6, 5]} intensity={0.8} />
+        <ambientLight intensity={1.25} />
+        <directionalLight position={[4, 7, 5]} intensity={0.9} />
+        <CameraRig isMobile={isMobile} />
         <RingStage
           activeIndex={activeIndex}
           onSelect={handleSelect}
           scrollRotationRef={scrollRotationRef}
         />
+        {/* Soft floor shadow under cards */}
+        <ContactShadows
+          position={[0, -1.02, 0]}
+          opacity={0.32}
+          scale={11}
+          blur={2.0}
+          far={4}
+          color="#211529"
+        />
       </Canvas>
 
-      {/* Spacious Bottom-Left Focused Campaign Overlay */}
+      {/* Spacious Bottom-Left Focused Campaign Overlay matching ui-ref-hero-focused.jpg */}
       {activeItem && (
         <div className="absolute bottom-8 md:bottom-12 left-6 md:left-12 z-20 max-w-lg pointer-events-auto bg-[var(--bg-card)]/90 md:bg-transparent backdrop-blur-md md:backdrop-blur-none p-5 md:p-0 rounded-2xl border border-[var(--border-hairline)] md:border-none shadow-xl md:shadow-none transition-all">
           <div className="flex flex-wrap items-center gap-2 mb-2">
