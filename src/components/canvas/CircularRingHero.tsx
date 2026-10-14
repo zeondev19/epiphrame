@@ -5,6 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, RoundedBox, useTexture, useVideoTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 function VideoPlaneMaterial({ src }: { src: string }) {
   const texture = useVideoTexture(src, {
@@ -42,14 +43,15 @@ function RingCard({
   onSelect: (index: number) => void;
 }) {
   const meshRef = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
   const angle = (index / total) * Math.PI * 2;
   const baseX = Math.sin(angle) * radius;
   const baseZ = Math.cos(angle) * radius;
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
-    const targetScale = isActive ? 1.42 : anyActive ? 0.88 : 1.0;
-    const targetZOffset = isActive ? 0.9 : 0;
+    const targetScale = isActive ? 1.42 : anyActive ? (hovered ? 0.96 : 0.88) : (hovered ? 1.06 : 1.0);
+    const targetZOffset = isActive ? 0.9 : (hovered ? 0.15 : 0);
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
@@ -63,29 +65,61 @@ function RingCard({
 
   const animatedSrc = item.videoTextureSrc;
 
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    onSelect(index);
+  };
+
   return (
     <group
       ref={meshRef}
       position={[baseX, 0, baseZ]}
       rotation={[0, angle, 0]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(index);
-      }}
     >
+      {/* Invisible Raycast Hit Box (depth 0.25 covers front, back, and sides from any angle) */}
+      <mesh
+        position={[0, 0, 0]}
+        onClick={handleClick}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+          document.body.style.cursor = 'default';
+        }}
+      >
+        <boxGeometry args={[1.82, 2.38, 0.25]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
       {/* Thin Charcoal Backing Frame */}
-      <RoundedBox args={[1.68, 2.24, 0.04]} radius={0.06} smoothness={4}>
+      <RoundedBox args={[1.68, 2.24, 0.04]} radius={0.06} smoothness={4} onClick={handleClick}>
         <meshBasicMaterial color="#211529" />
       </RoundedBox>
 
-      {/* Full-Bleed Front & Back Artwork Plane (Standard 0..1 UVs = Zero White Margin!) */}
-      <mesh position={[0, 0, 0.025]}>
+      {/* Full-Bleed Front Artwork Plane (Standard 0..1 UVs = Zero White Margin!) */}
+      <mesh position={[0, 0, 0.025]} onClick={handleClick}>
         <planeGeometry args={[1.6, 2.14]} />
         <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
           {animatedSrc ? (
             <VideoPlaneMaterial src={animatedSrc} />
           ) : (
             <ImagePlaneMaterial src={item.posterSrc} />
+          )}
+        </Suspense>
+      </mesh>
+
+      {/* Full-Bleed Back Artwork Plane so cards are visible from behind */}
+      <mesh position={[0, 0, -0.025]} rotation={[0, Math.PI, 0]} onClick={handleClick}>
+        <planeGeometry args={[1.6, 2.14]} />
+        <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
+          {item.posterSrc ? (
+            <ImagePlaneMaterial src={item.posterSrc} />
+          ) : (
+            <meshBasicMaterial color={item.accentColor} />
           )}
         </Suspense>
       </mesh>
@@ -112,26 +146,16 @@ function RingCard({
 
 function RingStage({
   activeIndex,
-  setActiveIndex,
+  onSelect,
   scrollRotationRef,
 }: {
   activeIndex: number | null;
-  setActiveIndex: (i: number | null) => void;
+  onSelect: (i: number) => void;
   scrollRotationRef: React.MutableRefObject<number>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const total = RING_SHOWCASE_ITEMS.length;
   const radius = 4.2;
-
-  const handleSelect = (index: number) => {
-    if (activeIndex === index) {
-      setActiveIndex(null);
-    } else {
-      setActiveIndex(index);
-      const targetAngle = -(index / total) * Math.PI * 2;
-      scrollRotationRef.current = targetAngle;
-    }
-  };
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -154,7 +178,7 @@ function RingStage({
           radius={radius}
           isActive={activeIndex === i}
           anyActive={activeIndex !== null}
-          onSelect={handleSelect}
+          onSelect={onSelect}
         />
       ))}
     </group>
@@ -166,7 +190,8 @@ export default function CircularRingHero() {
   const [isMobile, setIsMobile] = useState(false);
   const scrollRotationRef = useRef<number>(0);
   const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const hasMovedRef = useRef(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -187,26 +212,61 @@ export default function CircularRingHero() {
     return () => window.removeEventListener('wheel', onWheel);
   }, []);
 
+  useEffect(() => {
+    const handleGlobalPointerUp = () => {
+      isDraggingRef.current = false;
+      setTimeout(() => {
+        hasMovedRef.current = false;
+      }, 80);
+    };
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    return () => window.removeEventListener('pointerup', handleGlobalPointerUp);
+  }, []);
+
   const handlePointerDown = (e: React.PointerEvent) => {
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     isDraggingRef.current = true;
-    startXRef.current = e.clientX;
+    hasMovedRef.current = false;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
-    const deltaX = e.clientX - startXRef.current;
-    startXRef.current = e.clientX;
-    scrollRotationRef.current += deltaX * 0.004;
+    const deltaX = e.clientX - dragStartRef.current.x;
+    const deltaY = e.clientY - dragStartRef.current.y;
+    if (Math.hypot(deltaX, deltaY) > 5) {
+      hasMovedRef.current = true;
+    }
+    if (hasMovedRef.current) {
+      scrollRotationRef.current += (e.clientX - dragStartRef.current.x) * 0.003;
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+    }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDraggingRef.current) {
-      try {
-        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
-      } catch {}
-      isDraggingRef.current = false;
-    }
+  const handlePointerUp = () => {
+    isDraggingRef.current = false;
+    setTimeout(() => {
+      hasMovedRef.current = false;
+    }, 80);
+  };
+
+  const handleSelect = (index: number) => {
+    if (hasMovedRef.current) return;
+    setActiveIndex(index);
+
+    // Shortest angular rotation to bring selected card to front
+    const total = RING_SHOWCASE_ITEMS.length;
+    const baseTarget = -(index / total) * Math.PI * 2;
+    const currentRot = scrollRotationRef.current;
+    const twoPi = Math.PI * 2;
+    const diff = ((baseTarget - currentRot) % twoPi + twoPi + Math.PI) % twoPi - Math.PI;
+    scrollRotationRef.current = currentRot + diff;
+  };
+
+  const handleNavigate = (direction: 'next' | 'prev') => {
+    const total = RING_SHOWCASE_ITEMS.length;
+    const current = activeIndex ?? 0;
+    const nextIndex = direction === 'next' ? (current + 1) % total : (current - 1 + total) % total;
+    handleSelect(nextIndex);
   };
 
   const activeItem = activeIndex !== null ? RING_SHOWCASE_ITEMS[activeIndex] : null;
@@ -217,7 +277,6 @@ export default function CircularRingHero() {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
     >
       {/* Top Hero Instruction Pill */}
       <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center px-4 w-full max-w-lg">
@@ -232,13 +291,12 @@ export default function CircularRingHero() {
           fov: isMobile ? 44 : 38,
         }}
         dpr={[1, 1.5]}
-        onPointerMissed={() => setActiveIndex(null)}
       >
         <ambientLight intensity={1.2} />
         <directionalLight position={[4, 6, 5]} intensity={0.8} />
         <RingStage
           activeIndex={activeIndex}
-          setActiveIndex={setActiveIndex}
+          onSelect={handleSelect}
           scrollRotationRef={scrollRotationRef}
         />
       </Canvas>
@@ -290,13 +348,30 @@ export default function CircularRingHero() {
         </div>
       )}
 
-      {/* Bottom Right Card Navigator Indicator */}
-      <div className="absolute bottom-10 right-10 md:right-24 z-20 hidden sm:flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)]">
-        <span>CARD</span>
-        <span className="font-bold text-[var(--text-primary)]">
-          {activeItem ? activeItem.indexLabel : '--'}
+      {/* Bottom Right Interactive Card Navigator */}
+      <div className="absolute bottom-8 sm:bottom-10 right-6 sm:right-10 md:right-24 z-20 flex items-center gap-2 bg-[var(--bg-card)]/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-[var(--border-hairline)] shadow-lg font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => handleNavigate('prev')}
+          className="p-1 rounded-full hover:bg-[var(--border-hairline)] text-[var(--text-primary)] transition-colors active:scale-95"
+          title="Previous Card"
+          aria-label="Previous card in 3D ring"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <span className="font-bold text-[var(--text-primary)] px-1">
+          {activeItem ? activeItem.indexLabel : '01'}
         </span>
         <span>/ 08</span>
+        <button
+          type="button"
+          onClick={() => handleNavigate('next')}
+          className="p-1 rounded-full hover:bg-[var(--border-hairline)] text-[var(--text-primary)] transition-colors active:scale-95"
+          title="Next Card"
+          aria-label="Next card in 3D ring"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </section>
   );
