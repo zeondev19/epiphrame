@@ -285,11 +285,13 @@ function RingCard({
   const baseX = Math.sin(angle) * radius;
   const baseZ = Math.cos(angle) * radius;
 
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
     if (!meshRef.current) return;
     const targetScale = isActive ? 1.18 : anyActive ? 0.92 : 1.0;
     const targetZOffset = isActive ? 0.45 : (hovered ? 0.12 : 0);
-    const targetY = hovered ? 0.12 : 0;
+    // Ribbon / orbit wave motion from Gallery source
+    const ribbonWave = Math.sin(angle * 2.0 + clock.getElapsedTime() * 0.7) * 0.12;
+    const targetY = (hovered ? 0.14 : 0) + ribbonWave;
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
@@ -352,16 +354,120 @@ function RingCard({
   );
 }
 
+function CenterpieceHeading3D({ isMobile }: { isMobile: boolean }) {
+  const meshRef = useRef<THREE.Group>(null);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+
+  const headingTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 768;
+    const ctx = canvas.getContext('2d')!;
+
+    const renderText = () => {
+      ctx.clearRect(0, 0, 2048, 768);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // 1. Playful Tagline Badge Pill
+      ctx.save();
+      ctx.fillStyle = '#FFD400';
+      ctx.beginPath();
+      if ((ctx as any).roundRect) {
+        (ctx as any).roundRect(1024 - 280, 80, 560, 68, 34);
+      } else {
+        ctx.rect(1024 - 280, 80, 560, 68);
+      }
+      ctx.fill();
+      ctx.fillStyle = '#211529';
+      ctx.font = '800 28px monospace, ui-monospace, sans-serif';
+      ctx.fillText('✦ 100% HUMAN DRAWN ✦', 1024, 114);
+      ctx.restore();
+
+      // 2. Playful, Energetic Pop Headline "EPIPHRAME"
+      ctx.save();
+      // Drop Shadow
+      ctx.shadowColor = 'rgba(19, 136, 229, 0.45)';
+      ctx.shadowBlur = 45;
+      ctx.shadowOffsetY = 16;
+
+      const grad = ctx.createLinearGradient(1024, 160, 1024, 460);
+      grad.addColorStop(0, '#FFFFFF');
+      grad.addColorStop(0.45, '#F4F7FF');
+      grad.addColorStop(1, '#1388E5');
+
+      ctx.font = '800 230px Fredoka, Syne, "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillStyle = grad;
+      ctx.fillText('EPIPHRAME', 1024, 320);
+
+      // Cartoon outline
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.strokeText('EPIPHRAME', 1024, 320);
+      ctx.restore();
+
+      // 3. Subtitle
+      ctx.save();
+      ctx.font = '700 40px Syne, "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillStyle = '#D1CAEA';
+      ctx.fillText('CHARACTER ART & VIRAL WORLD ADS', 1024, 485);
+      ctx.restore();
+    };
+
+    renderText();
+
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        renderText();
+        if (textureRef.current) textureRef.current.needsUpdate = true;
+      });
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+    return tex;
+  }, []);
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    // Elegant floating bobbing motion
+    const t = clock.getElapsedTime();
+    meshRef.current.position.y = 0.12 + Math.sin(t * 1.4) * 0.06;
+  });
+
+  if (!headingTexture) return null;
+
+  const scale = isMobile ? 0.65 : 1.0;
+
+  return (
+    <group ref={meshRef} position={[0, 0.12, 0]} scale={[scale, scale, scale]}>
+      <mesh>
+        <planeGeometry args={[5.2, 1.95]} />
+        <meshBasicMaterial
+          map={headingTexture}
+          transparent
+          toneMapped={false}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 function RingStage({
   activeIndex,
   onSelect,
   scrollRotationRef,
   onFrontChange,
+  isMobile,
 }: {
   activeIndex: number | null;
   onSelect: (i: number) => void;
   scrollRotationRef: React.MutableRefObject<number>;
   onFrontChange: (i: number) => void;
+  isMobile: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const total = RING_SHOWCASE_ITEMS.length;
@@ -370,6 +476,8 @@ function RingStage({
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
+    // Subtle autonomous orbit drift from Gallery source
+    scrollRotationRef.current += 0.0010;
     groupRef.current.rotation.y = THREE.MathUtils.damp(
       groupRef.current.rotation.y,
       scrollRotationRef.current,
@@ -389,6 +497,9 @@ function RingStage({
 
   return (
     <group rotation={[0.06, 0, 0]}>
+      {/* 3D Centerpiece Typography at z = 0 (GalleryHeading depth layout) */}
+      <CenterpieceHeading3D isMobile={isMobile} />
+
       <group ref={groupRef}>
         {RING_SHOWCASE_ITEMS.map((item, i) => (
           <RingCard
@@ -536,6 +647,7 @@ export default function CircularRingHero() {
           onSelect={handleSelect}
           scrollRotationRef={scrollRotationRef}
           onFrontChange={(idx) => setActiveIndex(idx)}
+          isMobile={isMobile}
         />
         {/* Subtle, soft warm floor shadow */}
         <ContactShadows

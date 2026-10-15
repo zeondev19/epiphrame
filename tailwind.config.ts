@@ -24,6 +24,8 @@ const config: Config = {
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        fredoka: ['Fredoka', '"Plus Jakarta Sans"', 'sans-serif'],
+        syne: ['Syne', '"Plus Jakarta Sans"', 'sans-serif'],
       },
     },
   },
