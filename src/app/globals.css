@@ -1,29 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Syne:wght@700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-surface: #F6EDE4;       /* Warm Editorial Cream (75% of screen) */
-  --bg-card: #FFFFFF;          /* Crisp Gallery White */
-  --text-primary: #211529;     /* Deep Charcoal Ink */
-  --text-muted: #5E5466;       /* Muted Editorial Slate */
-  --border-hairline: rgba(33, 21, 41, 0.14);
-  --accent-blue: #1388E5;      /* Vibe Cobalt Blue */
-  --accent-yellow: #FFD400;    /* Pure Sun Yellow (Flower Mascot) */
-  --accent-pink: #FF66B2;      /* Bubblegum Pink */
-  --accent-green: #1E7E48;     /* Vibe Forest Green */
-  --accent-lavender: #D1CAEA;  /* Autumn Lavender */
-  --accent-coral: #C45F3F;     /* Tomato Jam */
+  --bg-surface: #F9F6F0;       /* Manga Archival Paper (tactile warm canvas) */
+  --bg-card: #FFFFFF;          /* Clean Gallery White */
+  --text-primary: #141316;     /* Deep Sumi Ink */
+  --text-muted: #5A5560;       /* Balanced Sumi Wash */
+  --border-hairline: rgba(20, 19, 22, 0.12);
+  --border-strong: #141316;    /* Sumi Comic Outline */
+  --accent-pink: #FF425E;      /* Riso Acid Coral (Primary hero interaction) */
+  --accent-yellow: #F3A72E;    /* Warm Marigold (Micro-accent for awards & stars) */
+  --accent-green: #204A36;     /* Matcha Forest (Client verification) */
+  --accent-charcoal: #141316;  /* Deep Sumi Ink */
 }
 
 [data-theme="dark"] {
-  --bg-surface: #211529;       /* Dark Disco */
-  --bg-card: #2D1E38;
-  --text-primary: #F6EDE4;
-  --text-muted: #D1CAEA;
-  --border-hairline: rgba(246, 237, 228, 0.15);
+  --bg-surface: #141316;       /* Deep Sumi Canvas */
+  --bg-card: #1E1C22;          /* Charcoal Black Card */
+  --text-primary: #F9F6F0;     /* Archival Paper Text */
+  --text-muted: #A8A1AF;       /* Muted Silver Violet */
+  --border-hairline: rgba(249, 246, 240, 0.14);
+  --border-strong: #F9F6F0;
+}
+
+::selection {
+  background-color: #FF425E;
+  color: #FFFFFF;
 }
 
 /* Hide default native browser scrollbar across Chrome, Edge, Safari, and Firefox */

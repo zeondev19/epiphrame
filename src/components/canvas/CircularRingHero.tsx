@@ -186,11 +186,11 @@ function GlassCardMesh({
           float heroCoreBR = max(0.0, 1.0 - length(dHeroBR) * 14.0);
           float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8)), 10.0);
 
-          vec3 starColor = mix(vec3(1.0, 0.98, 0.90), rainbow, 0.35);
+          vec3 starColor = mix(vec3(1.0, 0.95, 0.4), vec3(1.0, 0.20, 0.60), 0.35);
           float starTotal = gridStars * 2.0 + (heroStarTL + heroStarBR) * 1.8 + cornerFlash * 0.8;
           col += starColor * starTotal * (0.65 + 0.45 * uActive);
 
-          // 5. GlassAiButton LUMINOUS NEON BORDER (KEPT EXACTLY AS YOU LIKED)
+          // 5. GlassAiButton LUMINOUS NEON BORDER (Tokyo Risograph: Riso Coral #FF425E, Warm Marigold #F3A72E & Matcha Forest)
           float outerStroke = smoothstep(-0.018, -0.002, dist);
           float innerGlow = exp(-pow(max(0.0, -dist - 0.015) / 0.040, 2.0));
 
@@ -199,26 +199,26 @@ function GlassCardMesh({
           float mouseAngle = atan(uMouse.y, uMouse.x);
           float cursorTracking = 0.5 + 0.5 * cos(borderAngle - mouseAngle);
 
-          vec3 neonBlue = vec3(0.08, 0.48, 1.1);
-          vec3 neonPurple = vec3(0.70, 0.22, 0.98);
-          vec3 neonCyan = vec3(0.18, 0.88, 1.0);
+          vec3 risoCoral = vec3(1.0, 0.26, 0.37);      // #FF425E (Riso Acid Coral)
+          vec3 warmMarigold = vec3(0.95, 0.65, 0.18);  // #F3A72E (Warm Marigold)
+          vec3 matchaForest = vec3(0.13, 0.29, 0.21);  // #204A36 (Matcha Forest)
 
-          vec3 strokeGradient = mix(neonBlue, neonPurple, sin(borderAngle * 2.0 + uTime * 0.7) * 0.5 + 0.5);
-          strokeGradient = mix(strokeGradient, neonCyan, cursorTracking * 0.65);
+          vec3 strokeGradient = mix(risoCoral, warmMarigold, sin(borderAngle * 2.2 + uTime * 1.0) * 0.5 + 0.5);
+          strokeGradient = mix(strokeGradient, matchaForest, cursorTracking * 0.40);
 
-          float luminousRim = (outerStroke * 1.5 + innerGlow * 0.55) * (0.8 + 0.7 * cursorTracking + 0.5 * uActive);
+          float luminousRim = (outerStroke * 1.4 + innerGlow * 0.5) * (0.85 + 0.6 * cursorTracking + 0.4 * uActive);
 
-          // Translucent glass bezel frame tint
+          // Translucent glass bezel frame tint (Manga Archival Paper / Riso Coral)
           float frameMask = smoothstep(-0.040, -0.032, dist);
-          vec3 glassTint = mix(vec3(0.92, 0.96, 1.0), strokeGradient, 0.35);
-          col = mix(col, mix(col, glassTint, 0.28), frameMask);
+          vec3 glassTint = mix(vec3(0.976, 0.965, 0.941), strokeGradient, 0.22);
+          col = mix(col, mix(col, glassTint, 0.20), frameMask);
 
-          // Apply luminous neon border stroke & grazing Fresnel sheen
+          // Apply calibrated rim stroke & grazing Fresnel sheen
           col += strokeGradient * luminousRim;
-          col += vec3(1.0) * grazing * 0.38 * (0.8 + 0.4 * uActive);
+          col += vec3(1.0) * grazing * 0.30 * (0.8 + 0.4 * uActive);
 
           // Subtle diagonal glass reflection
-          float diagonalSheen = 0.05 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
+          float diagonalSheen = 0.04 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
           col += vec3(diagonalSheen);
 
           gl_FragColor = vec4(col, alpha);
@@ -287,15 +287,22 @@ function RingCard({
 
   useFrame(({ clock }, delta) => {
     if (!meshRef.current) return;
-    const targetScale = isActive ? 1.18 : anyActive ? 0.92 : 1.0;
-    const targetZOffset = isActive ? 0.45 : (hovered ? 0.12 : 0);
+    const targetScale = isActive ? 1.22 : anyActive ? 0.92 : 1.0;
+    const targetZOffset = isActive ? 0.50 : (hovered ? 0.14 : 0);
     // Ribbon / orbit wave motion from Gallery source
     const ribbonWave = Math.sin(angle * 2.0 + clock.getElapsedTime() * 0.7) * 0.12;
-    const targetY = (hovered ? 0.14 : 0) + ribbonWave;
+    const targetY = (hovered ? 0.16 : 0) + ribbonWave;
+
+    // Human-crafted playful organic tilt (anti-AI mechanical symmetry)
+    const organicTiltZ = isActive ? 0 : Math.sin(index * 1.618) * 0.045;
+    const organicTiltX = isActive ? 0 : Math.cos(index * 2.3) * 0.035;
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
     meshRef.current.scale.z = THREE.MathUtils.damp(meshRef.current.scale.z, targetScale, 7, delta);
+
+    meshRef.current.rotation.z = THREE.MathUtils.damp(meshRef.current.rotation.z, organicTiltZ, 6, delta);
+    meshRef.current.rotation.x = THREE.MathUtils.damp(meshRef.current.rotation.x, organicTiltX, 6, delta);
 
     const forwardX = Math.sin(angle) * (radius + targetZOffset);
     const forwardZ = Math.cos(angle) * (radius + targetZOffset);
@@ -341,7 +348,7 @@ function RingCard({
           distanceFactor={3.4}
           pointerEvents="none"
         >
-          <div className="relative animate-bounce -translate-x-1/2 -translate-y-1/2 filter drop-shadow-md">
+          <div className="relative -translate-x-1/2 -translate-y-1/2 filter drop-shadow-[2px_2px_0px_#141316]">
             <img
               src="/assets/mascots/flower-yellow.png"
               alt="Yellow Flower Mascot Accent"
@@ -370,48 +377,68 @@ function CenterpieceHeading3D({ isMobile }: { isMobile: boolean }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // 1. Playful Tagline Badge Pill
+      // 1. Playful Tagline Badge Pill (Manga Archival Paper with Deep Sumi Comic Outline & Coral Star)
       ctx.save();
-      ctx.fillStyle = '#FFD400';
+      ctx.fillStyle = '#F9F6F0';
       ctx.beginPath();
       if ((ctx as any).roundRect) {
-        (ctx as any).roundRect(1024 - 280, 80, 560, 68, 34);
+        (ctx as any).roundRect(1024 - 280, 75, 560, 68, 34);
       } else {
-        ctx.rect(1024 - 280, 80, 560, 68);
+        ctx.rect(1024 - 280, 75, 560, 68);
       }
       ctx.fill();
-      ctx.fillStyle = '#211529';
-      ctx.font = '800 28px monospace, ui-monospace, sans-serif';
-      ctx.fillText('✦ 100% HUMAN DRAWN ✦', 1024, 114);
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = '#141316';
+      ctx.stroke();
+
+      ctx.fillStyle = '#FF425E';
+      ctx.font = '800 25px Fredoka, ui-monospace, sans-serif';
+      ctx.fillText('✦ 100% HUMAN DRAWN ✦', 1024, 110);
       ctx.restore();
 
-      // 2. Playful, Energetic Pop Headline "EPIPHRAME"
+      // 2. Playful, Energetic Pop Headline "EPIPHRAME" (Riso Acid Coral with Deep Sumi Ink Stroke)
       ctx.save();
-      // Drop Shadow
-      ctx.shadowColor = 'rgba(19, 136, 229, 0.45)';
-      ctx.shadowBlur = 45;
-      ctx.shadowOffsetY = 16;
+      // Calibrated Acid Coral Drop Shadow
+      ctx.shadowColor = 'rgba(255, 66, 94, 0.45)';
+      ctx.shadowBlur = 36;
+      ctx.shadowOffsetY = 14;
 
-      const grad = ctx.createLinearGradient(1024, 160, 1024, 460);
+      const grad = ctx.createLinearGradient(1024, 140, 1024, 460);
       grad.addColorStop(0, '#FFFFFF');
-      grad.addColorStop(0.45, '#F4F7FF');
-      grad.addColorStop(1, '#1388E5');
+      grad.addColorStop(0.35, '#FFF2F5');
+      grad.addColorStop(0.75, '#FF425E'); // Riso Acid Coral
+      grad.addColorStop(1, '#D92543');
 
-      ctx.font = '800 230px Fredoka, Syne, "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.font = '800 230px Fredoka, Syne, system-ui, sans-serif';
+
+      // Chunky Deep Sumi Ink Outline
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = '#141316';
+      ctx.lineJoin = 'round';
+      ctx.strokeText('EPIPHRAME', 1024, 320);
+
+      // Gradient Fill
       ctx.fillStyle = grad;
       ctx.fillText('EPIPHRAME', 1024, 320);
-
-      // Cartoon outline
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.strokeText('EPIPHRAME', 1024, 320);
       ctx.restore();
 
-      // 3. Subtitle
+      // 3. Subtitle Pill (Deep Sumi Ink with Archival Paper Text & Coral Rim)
       ctx.save();
-      ctx.font = '700 40px Syne, "Plus Jakarta Sans", system-ui, sans-serif';
-      ctx.fillStyle = '#D1CAEA';
-      ctx.fillText('CHARACTER ART & VIRAL WORLD ADS', 1024, 485);
+      ctx.fillStyle = '#141316';
+      ctx.beginPath();
+      if ((ctx as any).roundRect) {
+        (ctx as any).roundRect(1024 - 360, 460, 720, 58, 29);
+      } else {
+        ctx.rect(1024 - 360, 460, 720, 58);
+      }
+      ctx.fill();
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = '#FF425E';
+      ctx.stroke();
+
+      ctx.fillStyle = '#F9F6F0';
+      ctx.font = '800 23px Fredoka, Syne, sans-serif';
+      ctx.fillText('CHARACTER ART · VIRAL WORLD ADS · 60 FPS', 1024, 490);
       ctx.restore();
     };
 
@@ -626,7 +653,8 @@ export default function CircularRingHero() {
     >
       {/* Top Hero Instruction Pill */}
       <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center px-4 w-full max-w-lg">
-        <span className="inline-block font-mono text-[10px] md:text-xs tracking-wider uppercase px-4 py-1.5 rounded-full bg-[var(--bg-card)]/80 backdrop-blur-md border border-[var(--border-hairline)] text-[var(--text-muted)] shadow-sm">
+        <span className="inline-flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-wider uppercase px-4 py-1.5 rounded-full bg-[#F9F6F0]/90 dark:bg-[#141316]/90 backdrop-blur-md border border-[#141316]/20 dark:border-[#F9F6F0]/25 text-[var(--text-primary)] font-bold shadow-[2px_2px_0px_0px_#141316]">
+          <span className="w-2 h-2 rounded-full bg-[#FF425E]" />
           {SITE_COPY.heroHint}
         </span>
       </div>
@@ -638,9 +666,9 @@ export default function CircularRingHero() {
         }}
         dpr={[1, 1.5]}
       >
-        <ambientLight intensity={1.25} />
-        <directionalLight position={[4, 8, 6]} intensity={1.0} />
-        <directionalLight position={[-4, 4, -4]} intensity={0.4} color="#F6EDE4" />
+        <ambientLight intensity={1.3} />
+        <directionalLight position={[4, 8, 6]} intensity={1.1} />
+        <directionalLight position={[-4, 4, -4]} intensity={0.4} color="#F9F6F0" />
         <CameraRig isMobile={isMobile} />
         <RingStage
           activeIndex={activeIndex}
@@ -662,20 +690,20 @@ export default function CircularRingHero() {
 
       {/* Clean absolute bottom-left caption box inside Hero section */}
       {activeItem && (
-        <div className="absolute bottom-8 left-8 z-20 max-w-md translate-x-0 pointer-events-auto bg-[#F6EDE4]/85 dark:bg-[#211529]/85 backdrop-blur-md p-5 rounded-2xl border border-current/10 shadow-lg transition-all">
+        <div className="absolute bottom-8 left-8 z-20 max-w-md translate-x-0 pointer-events-auto bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md p-5 rounded-2xl border border-[#141316]/20 dark:border-[#F9F6F0]/20 shadow-[4px_4px_0px_0px_#141316] dark:shadow-[4px_4px_0px_0px_#FF425E] transition-all">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#F6EDE4] dark:text-[#211529] font-bold">
+            <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#141316] text-[#F9F6F0] dark:bg-[#F9F6F0] dark:text-[#141316] font-extrabold border border-[#141316]">
               {activeItem.indexLabel} / {activeItem.category}
             </span>
             <span
-              className="font-mono text-xs font-semibold px-3 py-1 rounded-full text-[#211529]"
-              style={{ backgroundColor: activeItem.accentColor }}
+              className="font-mono text-xs font-bold px-3 py-1 rounded-full text-[#141316] border border-[#141316]/25"
+              style={{ backgroundColor: activeItem.accentColor || '#F3A72E' }}
             >
               {activeItem.metricsBadge}
             </span>
           </div>
 
-          <h2 className="text-xl md:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight leading-snug">
+          <h2 className="text-xl md:text-2xl font-black text-[var(--text-primary)] tracking-tight leading-snug">
             {activeItem.title}
           </h2>
 
@@ -685,14 +713,14 @@ export default function CircularRingHero() {
               href={activeItem.clientUrl}
               target="_blank"
               rel="noreferrer"
-              className="underline font-semibold hover:text-[#1388E5] transition-colors"
+              className="underline font-bold text-[#141316] dark:text-[#F9F6F0] hover:text-[#FF425E] transition-colors"
             >
               {activeItem.client}
             </a>{' '}
             · Illustrated by{' '}
             <a
               href={`/artists#${activeItem.artistId}`}
-              className="underline font-semibold hover:text-[#1388E5] transition-colors"
+              className="underline font-bold text-[#141316] dark:text-[#F9F6F0] hover:text-[#FF425E] transition-colors"
             >
               {activeItem.artistName} (Epiphrame Collective)
             </a>
@@ -700,7 +728,7 @@ export default function CircularRingHero() {
 
           <a
             href={`#campaign-${activeItem.id}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#F6EDE4] dark:text-[#211529] text-xs font-mono font-bold tracking-wider hover:opacity-85 transition-opacity shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF425E] text-white text-xs font-mono font-extrabold tracking-wider border border-[#141316] shadow-[2px_2px_0px_0px_#141316] hover:bg-[#E8334E] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           >
             VIEW CAMPAIGN ↗
           </a>
@@ -708,28 +736,28 @@ export default function CircularRingHero() {
       )}
 
       {/* Bottom Right Interactive Card Navigator anchored absolutely inside Hero */}
-      <div className="absolute bottom-8 right-6 sm:right-10 md:right-16 z-20 flex items-center gap-2 bg-[var(--bg-card)]/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-[var(--border-hairline)] shadow-lg font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
+      <div className="absolute bottom-8 right-6 sm:right-10 md:right-16 z-20 flex items-center gap-2 bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#141316]/20 dark:border-[#F9F6F0]/25 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#FF425E] font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
         <button
           type="button"
           onClick={() => handleNavigate('prev')}
-          className="p-1 rounded-full hover:bg-[var(--border-hairline)] text-[var(--text-primary)] transition-colors active:scale-95"
+          className="p-1.5 rounded-full hover:bg-[#FF425E] hover:text-white text-[var(--text-primary)] transition-colors active:scale-90"
           title="Previous Card"
           aria-label="Previous card in 3D ring"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
         </button>
-        <span className="font-bold text-[var(--text-primary)] px-1">
+        <span className="font-black text-[#FF425E] px-1 text-sm">
           {activeItem ? activeItem.indexLabel : '01'}
         </span>
-        <span>/ 08</span>
+        <span className="font-bold text-[var(--text-primary)]">/ 08</span>
         <button
           type="button"
           onClick={() => handleNavigate('next')}
-          className="p-1 rounded-full hover:bg-[var(--border-hairline)] text-[var(--text-primary)] transition-colors active:scale-95"
+          className="p-1.5 rounded-full hover:bg-[#FF425E] hover:text-white text-[var(--text-primary)] transition-colors active:scale-90"
           title="Next Card"
           aria-label="Next card in 3D ring"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 stroke-[2.5]" />
         </button>
       </div>
     </section>

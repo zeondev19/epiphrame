@@ -54,17 +54,17 @@ export function SketchToFinalSlider({
         />
       </div>
       <div
-        className="absolute top-0 bottom-0 w-0.5 bg-[#211529] pointer-events-none"
+        className="absolute top-0 bottom-0 w-0.5 bg-[#141316] pointer-events-none"
         style={{ left: `${splitPercent}%` }}
       >
-        <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#FFD400] border-2 border-[#211529] flex items-center justify-center font-mono text-xs font-bold shadow-lg">
+        <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F3A72E] border border-[#141316] text-[#141316] flex items-center justify-center font-mono text-xs font-black shadow-[2px_2px_0px_0px_#141316]">
           ||
         </div>
       </div>
-      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 text-[#211529] font-mono text-[11px] font-bold shadow-sm pointer-events-none">
+      <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/95 text-[#141316] border border-[#141316] font-mono text-[11px] font-bold shadow-sm pointer-events-none">
         RAW HUMAN SKETCH
       </span>
-      <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#1388E5] text-white font-mono text-[11px] font-bold shadow-sm pointer-events-none">
+      <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#FF425E] text-white font-mono text-[11px] font-bold shadow-sm pointer-events-none">
         FINAL VIRAL AD
       </span>
     </div>

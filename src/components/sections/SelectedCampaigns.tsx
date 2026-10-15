@@ -47,7 +47,7 @@ function CampaignVideoPlayer({ src, posterSrc, title }: { src: string; posterSrc
         <button
           type="button"
           onClick={toggleMute}
-          className="p-2 rounded-full bg-black/60 text-white hover:bg-[#1388E5] transition-colors backdrop-blur-sm"
+          className="p-2 rounded-full bg-black/70 text-white hover:bg-[#FF425E] transition-colors backdrop-blur-sm"
           aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
           title={isMuted ? 'Unmute audio' : 'Mute audio'}
         >
@@ -56,14 +56,14 @@ function CampaignVideoPlayer({ src, posterSrc, title }: { src: string; posterSrc
         <button
           type="button"
           onClick={togglePlay}
-          className="p-2 rounded-full bg-black/60 text-white hover:bg-[#1388E5] transition-colors backdrop-blur-sm"
+          className="p-2 rounded-full bg-black/70 text-white hover:bg-[#FF425E] transition-colors backdrop-blur-sm"
           aria-label={isPlaying ? 'Pause video' : 'Play video'}
           title={isPlaying ? 'Pause video' : 'Play video'}
         >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
         </button>
       </div>
-      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white font-mono text-[10px] uppercase font-bold tracking-wider">
+      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#141316]/90 border border-white/20 backdrop-blur-sm text-[#F3A72E] font-mono text-[10px] uppercase font-bold tracking-wider">
         VIDEO REEL · 30FPS
       </span>
     </>
@@ -94,10 +94,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#1388E5] text-white font-bold">
+              <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#FF425E] text-white font-extrabold border border-[#141316] shadow-[2px_2px_0px_0px_#141316]">
                 02 / SELECTED CAMPAIGNS
               </span>
-              <span className="font-mono text-xs text-[var(--text-muted)] tracking-wider">
+              <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider">
                 CYCLE AI & HANGJAM CREATIVES
               </span>
             </div>
@@ -110,14 +110,14 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
           </div>
 
           {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
             <button
               type="button"
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-full border transition-all ${
+              className={`px-4 py-2 rounded-full border border-[#141316] transition-all ${
                 filter === 'all'
-                  ? 'bg-[#211529] text-[#F6EDE4] border-[#211529] font-bold shadow-sm'
-                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-hairline)] hover:border-gray-400'
+                  ? 'bg-[#141316] text-[#F9F6F0] font-black shadow-[2px_2px_0px_0px_#FF425E]'
+                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[#F3A72E]/15'
               }`}
             >
               ALL ({RING_SHOWCASE_ITEMS.length})
@@ -125,10 +125,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
             <button
               type="button"
               onClick={() => setFilter('cycle')}
-              className={`px-4 py-2 rounded-full border transition-all ${
+              className={`px-4 py-2 rounded-full border border-[#141316] transition-all ${
                 filter === 'cycle'
-                  ? 'bg-[#1388E5] text-white border-[#1388E5] font-bold shadow-sm'
-                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-hairline)] hover:border-gray-400'
+                  ? 'bg-[#FF425E] text-white font-black shadow-[2px_2px_0px_0px_#141316]'
+                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[#F3A72E]/15'
               }`}
             >
               CYCLE AI (3)
@@ -136,10 +136,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
             <button
               type="button"
               onClick={() => setFilter('hangjam')}
-              className={`px-4 py-2 rounded-full border transition-all ${
+              className={`px-4 py-2 rounded-full border border-[#141316] transition-all ${
                 filter === 'hangjam'
-                  ? 'bg-[#1E7E48] text-white border-[#1E7E48] font-bold shadow-sm'
-                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-hairline)] hover:border-gray-400'
+                  ? 'bg-[#204A36] text-white font-black shadow-[2px_2px_0px_0px_#141316]'
+                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[#F3A72E]/15'
               }`}
             >
               HANGJAM (4)
@@ -147,10 +147,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
             <button
               type="button"
               onClick={() => setFilter('studio')}
-              className={`px-4 py-2 rounded-full border transition-all ${
+              className={`px-4 py-2 rounded-full border border-[#141316] transition-all ${
                 filter === 'studio'
-                  ? 'bg-[#C45F3F] text-white border-[#C45F3F] font-bold shadow-sm'
-                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-hairline)] hover:border-gray-400'
+                  ? 'bg-[#F3A72E] text-[#141316] font-black shadow-[2px_2px_0px_0px_#141316]'
+                  : 'bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[#F3A72E]/15'
               }`}
             >
               COLLECTIVE (1)
@@ -168,10 +168,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
               <div
                 id={`campaign-${item.id}`}
                 key={item.id}
-                className="group flex flex-col rounded-3xl bg-[var(--bg-card)] border border-[var(--border-hairline)] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                className="group flex flex-col rounded-3xl bg-[var(--bg-card)] border border-[#141316]/18 overflow-hidden shadow-[3px_3px_0px_0px_#141316] hover:shadow-[6px_6px_0px_0px_#FF425E] hover:-translate-y-1 transition-all duration-300"
               >
                 {/* Media Preview Stage */}
-                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
+                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center border-b border-[#141316]/18">
                   {isVideo ? (
                     <CampaignVideoPlayer
                       src={item.src}
@@ -185,7 +185,7 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                         alt={item.title}
                         className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                       />
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#FFD400] text-[#211529] font-mono text-[10px] uppercase font-bold tracking-wider">
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#F3A72E] border border-[#141316] text-[#141316] font-mono text-[10px] uppercase font-bold tracking-wider">
                         LOOPING GIF · 60FPS
                       </span>
                     </>
@@ -196,7 +196,7 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white font-mono text-[10px] uppercase font-bold tracking-wider">
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white font-mono text-[10px] uppercase font-bold tracking-wider">
                         ILLUSTRATION
                       </span>
                     </>
@@ -216,18 +216,18 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                   <div>
                     {/* Index & Category & Metric */}
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                      <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
+                      <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-bold">
                         {item.indexLabel} / {item.category}
                       </span>
                       <span
-                        className="font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full text-[#211529]"
-                        style={{ backgroundColor: item.accentColor }}
+                        className="font-mono text-[11px] font-extrabold px-3 py-0.5 rounded-full text-[#141316] border border-[#141316]/25"
+                        style={{ backgroundColor: item.accentColor || '#F3A72E' }}
                       >
                         {item.metricsBadge}
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight leading-snug mb-2 group-hover:text-[#1388E5] transition-colors">
+                    <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight leading-snug mb-2 group-hover:text-[#FF425E] transition-colors">
                       {item.title}
                     </h3>
 
@@ -239,23 +239,23 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                   {/* Footer / Meta */}
                   <div className="pt-4 border-t border-[var(--border-hairline)] flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-[var(--text-muted)] block text-[11px]">Client</span>
+                      <span className="text-[var(--text-muted)] block text-[11px] font-bold">Client</span>
                       <a
                         href={item.clientUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-bold text-[var(--text-primary)] hover:text-[#1388E5] inline-flex items-center gap-1"
+                        className="font-black text-[var(--text-primary)] hover:text-[#FF425E] inline-flex items-center gap-1"
                       >
                         {item.client}
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-3 h-3 stroke-[2.5]" />
                       </a>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[var(--text-muted)] block text-[11px]">Artist Lead</span>
+                      <span className="text-[var(--text-muted)] block text-[11px] font-bold">Artist Lead</span>
                       <a
                         href={`/artists#${item.artistId}`}
-                        className="font-bold text-[var(--text-primary)] hover:text-[#1388E5] underline"
+                        className="font-black text-[var(--text-primary)] hover:text-[#FF425E] underline"
                       >
                         {item.artistName}
                       </a>
@@ -266,10 +266,10 @@ export function SelectedCampaigns({ onOpenInquiry }: SelectedCampaignsProps) {
                   <button
                     type="button"
                     onClick={() => onOpenInquiry?.(item.category, item.artistId)}
-                    className="mt-4 w-full py-2.5 px-4 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:bg-[#211529] hover:text-[#F6EDE4] text-[var(--text-primary)] font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                    className="mt-4 w-full py-2.5 px-4 rounded-xl border border-[#141316] bg-[var(--bg-surface)] hover:bg-[#FF425E] hover:text-white text-[var(--text-primary)] font-mono text-xs font-black shadow-[2px_2px_0px_0px_#141316] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-1.5"
                   >
                     <span>COMMISSION THIS STYLE</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
                   </button>
                 </div>
               </div>

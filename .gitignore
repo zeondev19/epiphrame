@@ -34,3 +34,6 @@ yarn-error.log*
 
 # local scratch / archives
 new/
+.agents/
+.impeccable/
+

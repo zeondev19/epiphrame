@@ -17,7 +17,7 @@ const CircularRingHero = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-screen bg-[#F6EDE4] flex items-center justify-center font-mono text-xs tracking-widest text-[#211529]">
+      <div className="w-full h-screen bg-[#F9F6F0] flex items-center justify-center font-mono text-xs tracking-widest text-[#141316] font-bold">
         LOADING EPIPHRAME 3D RING...
       </div>
     ),

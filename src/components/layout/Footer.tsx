@@ -20,35 +20,35 @@ export function Footer({ onOpenInquiry }: FooterProps) {
               <span className="font-black text-2xl tracking-tighter text-[var(--text-primary)]">
                 {SITE_COPY.brandName}
               </span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#1388E5]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FF425E]" />
             </Link>
             <p className="text-sm text-[var(--text-muted)] max-w-sm leading-relaxed mb-6">
               {SITE_COPY.tagline}
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-hairline)] font-mono text-xs text-[var(--text-primary)]">
-              <Sparkles className="w-3.5 h-3.5 text-[#FFD400]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[#141316]/25 font-mono text-xs font-bold text-[var(--text-primary)] shadow-[2px_2px_0px_0px_#141316]">
+              <Sparkles className="w-3.5 h-3.5 text-[#F3A72E] fill-[#F3A72E]" />
               <span>100% Hand-Crafted Human Art · 0% AI Slop</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="md:col-span-3">
-            <h4 className="font-mono text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] mb-4">
+            <h4 className="font-mono text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-4">
               NAVIGATION
             </h4>
             <ul className="space-y-2.5 font-mono text-xs">
               <li>
-                <Link href="/#manifesto" className="text-[var(--text-muted)] hover:text-[#1388E5] transition-colors">
+                <Link href="/#manifesto" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
                   01 / WHY HUMAN ART WINS
                 </Link>
               </li>
               <li>
-                <Link href="/#campaigns" className="text-[var(--text-muted)] hover:text-[#1388E5] transition-colors">
+                <Link href="/#campaigns" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
                   02 / SELECTED CAMPAIGNS
                 </Link>
               </li>
               <li>
-                <Link href="/artists" className="text-[var(--text-muted)] hover:text-[#1388E5] transition-colors">
+                <Link href="/artists" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
                   03 / ARTIST ROSTER & SKETCHES
                 </Link>
               </li>
@@ -56,9 +56,9 @@ export function Footer({ onOpenInquiry }: FooterProps) {
                 <button
                   type="button"
                   onClick={onOpenInquiry}
-                  className="text-[var(--text-primary)] font-bold hover:text-[#1388E5] transition-colors inline-flex items-center gap-1"
+                  className="text-[var(--text-primary)] font-black hover:text-[#FF425E] transition-colors inline-flex items-center gap-1"
                 >
-                  LET&apos;S TALK / INQUIRE <ArrowUpRight className="w-3 h-3" />
+                  LET&apos;S TALK / INQUIRE <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
                 </button>
               </li>
             </ul>
@@ -66,7 +66,7 @@ export function Footer({ onOpenInquiry }: FooterProps) {
 
           {/* Client Shoutouts */}
           <div className="md:col-span-4">
-            <h4 className="font-mono text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] mb-4">
+            <h4 className="font-mono text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-4">
               PROUD PARTNERS
             </h4>
             <p className="text-xs text-[var(--text-muted)] mb-3 leading-relaxed">
@@ -77,19 +77,19 @@ export function Footer({ onOpenInquiry }: FooterProps) {
                 href="https://www.cycleai.ai/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#1388E5] transition-colors group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#FF425E] hover:text-[#FF425E] transition-colors group"
               >
-                <span className="font-bold text-[var(--text-primary)]">Cycle AI — Mobile UA Campaigns</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#1388E5]" />
+                <span className="font-bold text-[var(--text-primary)] group-hover:text-[#FF425E]">Cycle AI — Mobile UA Campaigns</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#FF425E]" />
               </a>
               <a
                 href="https://hangjam.ai/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#1E7E48] transition-colors group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#204A36] hover:text-[#204A36] transition-colors group"
               >
                 <span className="font-bold text-[var(--text-primary)]">Hangjam — Interactive Bot Lore</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#1E7E48]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#204A36]" />
               </a>
             </div>
           </div>

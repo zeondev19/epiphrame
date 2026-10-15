@@ -105,9 +105,9 @@ export function InteractiveScrollRuler() {
                 </span>
               )}
               <div
-                className={`h-[1.5px] rounded-full transition-colors duration-150 ${tickWidth} ${
+                className={`h-[2px] rounded-full transition-colors duration-150 ${tickWidth} ${
                   isHighlighted
-                    ? 'bg-[#1388E5] shadow-[0_0_4px_rgba(19,136,229,0.5)]'
+                    ? 'bg-[#FF425E]'
                     : 'bg-[var(--text-primary)]/20'
                 }`}
               />
@@ -117,7 +117,7 @@ export function InteractiveScrollRuler() {
 
         {/* Draggable Active Thumb Indicator */}
         <div
-          className="absolute -right-1 w-3 h-5 rounded-full bg-[#1388E5] border-2 border-white shadow-md transition-transform duration-75 pointer-events-none -translate-y-1/2"
+          className="absolute -right-1 w-3.5 h-4.5 rounded-full bg-[#FF425E] border border-[#141316] shadow-[1.5px_1.5px_0px_0px_#141316] transition-transform duration-75 pointer-events-none -translate-y-1/2"
           style={{
             top: `${scrollProgress * 100}%`,
           }}

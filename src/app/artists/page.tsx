@@ -89,13 +89,13 @@ export default function ArtistsPage() {
       <InteractiveScrollRuler />
 
       {/* Main Content Container */}
-      <div className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto px-6">
+      <div className="pt-28 md:pt-36 pb-20 max-w-7xl mx-auto px-6">
         {/* Section Tagline matching ui-ref-artists-page.jpg */}
         <div className="flex items-center gap-3 mb-6">
-          <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#211529] text-[#F6EDE4] font-bold">
+          <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] font-extrabold border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
             02 / THE ARTIST COLLECTIVE — REAL HUMAN CRAFT
           </span>
-          <span className="font-mono text-xs text-[var(--text-muted)] tracking-wider hidden sm:inline">
+          <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider hidden sm:inline">
             ZERO GENERATIVE AI SLOP · 100% HAND DRAWN
           </span>
         </div>
@@ -110,10 +110,10 @@ export default function ArtistsPage() {
                   key={artist.id}
                   type="button"
                   onClick={() => handleSelectArtist(artist.id)}
-                  className={`group relative flex-shrink-0 flex flex-col items-center p-3 sm:p-4 rounded-2xl sm:rounded-3xl border-2 transition-all duration-300 ${
+                  className={`group relative flex-shrink-0 flex flex-col items-center p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all duration-300 ${
                     isSelected
-                      ? 'bg-[var(--bg-card)] shadow-xl scale-105 border-[var(--text-primary)] ring-4 ring-[#1388E5]/20'
-                      : 'bg-[var(--bg-card)]/70 hover:bg-[var(--bg-card)] border-[var(--border-hairline)] hover:scale-102 opacity-80 hover:opacity-100'
+                      ? 'bg-[var(--bg-card)] shadow-[3px_3px_0px_0px_#141316] scale-105 border-[#141316] ring-2 ring-[#FF425E]/40'
+                      : 'bg-[var(--bg-card)]/70 hover:bg-[var(--bg-card)] border-[#141316]/15 hover:border-[#141316] hover:scale-102 opacity-80 hover:opacity-100'
                   }`}
                   style={{
                     minWidth: '110px',
@@ -131,7 +131,7 @@ export default function ArtistsPage() {
                   <div
                     className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center p-2 mb-2 transition-transform group-hover:rotate-3"
                     style={{
-                      backgroundColor: `${artist.emblemColor}22`,
+                      backgroundColor: `${artist.emblemColor}18`,
                     }}
                   >
                     <img
@@ -196,7 +196,7 @@ export default function ArtistsPage() {
               <h3 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] tracking-tight">
                 SPEEDPAINT VIDEO / GIF REEL
               </h3>
-              <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#1388E5] text-white font-bold">
+              <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#FF425E] text-white font-bold">
                 {currentVaultItem.mediaFormat.toUpperCase()}
               </span>
             </div>
@@ -226,7 +226,7 @@ export default function ArtistsPage() {
                     <button
                       type="button"
                       onClick={toggleVideo}
-                      className="absolute inset-0 m-auto w-24 h-12 rounded-full bg-white/90 hover:bg-white text-[#211529] font-black text-sm tracking-wider uppercase backdrop-blur-md shadow-2xl flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95"
+                      className="absolute inset-0 m-auto w-24 h-12 rounded-full bg-white/90 hover:bg-white text-[#141316] font-black text-sm tracking-wider uppercase backdrop-blur-md shadow-2xl flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95"
                       aria-label="Play speedpaint timelapse"
                     >
                       <Play className="w-5 h-5 fill-current" />
@@ -291,12 +291,12 @@ export default function ArtistsPage() {
                   }}
                   className={`flex-1 py-2 px-3 rounded-xl border text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 ${
                     activeVaultIndex === idx
-                      ? 'bg-[#211529] text-[#F6EDE4] border-[#211529] shadow-sm'
+                      ? 'bg-[#141316] text-[#F9F6F0] border-[#141316] shadow-sm'
                       : 'bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-hairline)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {item.mediaFormat === 'video' && <Film className="w-3.5 h-3.5" />}
-                  {item.mediaFormat === 'gif' && <Flame className="w-3.5 h-3.5 text-[#FFD400]" />}
+                  {item.mediaFormat === 'gif' && <Flame className="w-3.5 h-3.5 text-[#F3A72E]" />}
                   {item.mediaFormat === 'image' && <ImageIcon className="w-3.5 h-3.5" />}
                   <span className="truncate">Vault 0{idx + 1}</span>
                 </button>
@@ -306,7 +306,7 @@ export default function ArtistsPage() {
         </div>
 
         {/* 3. Sombong Flex Badges & 'BOOK THIS STYLE ↗' Banner */}
-        <div className="bg-[var(--bg-card)] rounded-3xl p-6 sm:p-10 border border-[var(--border-hairline)] shadow-xl mb-16">
+        <div className="bg-[var(--bg-card)] rounded-3xl p-6 sm:p-10 border-2 border-[#141316] shadow-[6px_6px_0px_0px_#141316] mb-16">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-[var(--border-hairline)]">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -328,20 +328,20 @@ export default function ArtistsPage() {
 
             {/* Prominent Sombong Action Buttons matching ui-ref-artists-page.jpg */}
             <div className="flex flex-wrap items-center gap-3">
-              <span className="py-3 px-5 rounded-full bg-[#1388E5] text-white font-mono text-xs sm:text-sm font-extrabold tracking-wider shadow-sm flex items-center gap-2">
-                <Award className="w-4 h-4" />
+              <span className="py-2.5 px-5 rounded-full bg-[#204A36] text-[#F9F6F0] font-mono text-xs sm:text-sm font-extrabold tracking-wider border-2 border-[#141316] shadow-[2px_2px_0px_0px_#141316] flex items-center gap-2">
+                <Award className="w-4 h-4 stroke-[2.5]" />
                 {selectedArtist.sombongBadges[0]}
               </span>
 
-              <span className="py-3 px-5 rounded-full bg-[#FFD400] text-[#211529] font-mono text-xs sm:text-sm font-extrabold tracking-wider shadow-sm flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#211529]" />
+              <span className="py-2.5 px-5 rounded-full bg-[#F3A72E] text-[#141316] font-mono text-xs sm:text-sm font-extrabold tracking-wider border-2 border-[#141316] shadow-[2px_2px_0px_0px_#141316] flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#141316] stroke-[2.5]" />
                 {selectedArtist.role.split('&')[0].toUpperCase()}
               </span>
 
               <button
                 type="button"
                 onClick={() => setInquiryOpen(true)}
-                className="py-3 px-6 rounded-full bg-[#FF66B2] hover:bg-[#e04f98] text-white font-mono text-xs sm:text-sm font-black tracking-wider uppercase transition-all shadow-md active:scale-95 flex items-center gap-2"
+                className="py-2.5 px-6 rounded-full bg-[#FF425E] hover:bg-[#E6324D] text-[#F9F6F0] font-mono text-xs sm:text-sm font-black tracking-wider uppercase transition-all border-2 border-[#141316] shadow-[3px_3px_0px_0px_#141316] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#141316] flex items-center gap-2"
               >
                 <span>BOOK THIS STYLE ↗</span>
               </button>
@@ -386,7 +386,7 @@ export default function ArtistsPage() {
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#1E7E48] text-white font-bold">
+              <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#204A36] text-[#F9F6F0] font-extrabold border-2 border-[#141316] shadow-[2px_2px_0px_0px_#141316]">
                 03 / THE MULTI-MEDIA VAULT
               </span>
               <h3 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] tracking-tight mt-2">
@@ -396,9 +396,9 @@ export default function ArtistsPage() {
             <button
               type="button"
               onClick={() => setInquiryOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 font-mono text-xs font-bold text-[#1388E5] hover:underline"
+              className="hidden sm:inline-flex items-center gap-1.5 font-mono text-xs font-bold text-[#FF425E] hover:underline"
             >
-              Commission Custom Deliverable <ArrowUpRight className="w-3.5 h-3.5" />
+              Commission Custom Deliverable <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           </div>
 
@@ -410,10 +410,10 @@ export default function ArtistsPage() {
                   setActiveVaultIndex(idx);
                   window.scrollTo({ top: 350, behavior: 'smooth' });
                 }}
-                className={`group rounded-3xl bg-[var(--bg-card)] border overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer p-4 ${
+                className={`group rounded-3xl bg-[var(--bg-card)] border-2 overflow-hidden shadow-[4px_4px_0px_0px_#141316] hover:shadow-[6px_6px_0px_0px_#FF425E] transition-all cursor-pointer p-4 ${
                   activeVaultIndex === idx
-                    ? 'border-[#1388E5] ring-2 ring-[#1388E5]/20'
-                    : 'border-[var(--border-hairline)]'
+                    ? 'border-[#FF425E] ring-2 ring-[#FF425E]/30'
+                    : 'border-[#141316]/20 hover:border-[#141316]'
                 }`}
               >
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-900 mb-4">
@@ -437,12 +437,12 @@ export default function ArtistsPage() {
                   </span>
                 </div>
 
-                <h4 className="font-extrabold text-sm text-[var(--text-primary)] mb-1 group-hover:text-[#1388E5] transition-colors">
+                <h4 className="font-black text-sm text-[var(--text-primary)] mb-1 group-hover:text-[#FF425E] transition-colors">
                   {item.title}
                 </h4>
                 <p className="font-mono text-xs text-[var(--text-muted)] flex items-center justify-between">
                   <span>Vault Asset 0{idx + 1}</span>
-                  <span className="text-[#1388E5] font-bold group-hover:underline">Play in Stage ↑</span>
+                  <span className="text-[#FF425E] font-bold group-hover:underline">Play in Stage ↑</span>
                 </p>
               </div>
             ))}
@@ -453,7 +453,7 @@ export default function ArtistsPage() {
         <div className="text-center pt-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 font-mono text-xs font-bold text-[var(--text-muted)] hover:text-[#1388E5] transition-colors"
+            className="inline-flex items-center gap-2 font-mono text-xs font-bold text-[var(--text-muted)] hover:text-[#FF425E] transition-colors"
           >
             ← BACK TO 3D SHOWCASE RING & CAMPAIGNS
           </Link>
