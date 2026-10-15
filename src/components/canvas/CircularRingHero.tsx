@@ -1,33 +1,215 @@
 'use client';
 
-import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, RoundedBox, ContactShadows, useTexture, useVideoTexture } from '@react-three/drei';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Html, useTexture, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-function VideoPlaneMaterial({ src }: { src: string }) {
-  const texture = useVideoTexture(src, {
-    unsuspend: 'canplay',
-    muted: true,
-    loop: true,
-    start: true,
-    playsInline: true,
-  });
+function GlassCardMesh({
+  url,
+  isActive,
+  hovered,
+  onClick,
+  onPointerOver,
+  onPointerOut,
+}: {
+  url: string;
+  isActive: boolean;
+  hovered: boolean;
+  onClick: (e: any) => void;
+  onPointerOver: (e: any) => void;
+  onPointerOut: (e: any) => void;
+}) {
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const texture = useTexture(url);
   texture.colorSpace = THREE.SRGBColorSpace;
-  return <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} />;
-}
 
-function ImagePlaneMaterial({ src }: { src: string }) {
-  const texture = useTexture(src);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} />;
+  const shaderArgs = useMemo(() => {
+    return {
+      uniforms: {
+        map: { value: texture },
+        uTime: { value: 0 },
+        uMouse: { value: new THREE.Vector2(0, 0) },
+        uActive: { value: 0.45 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vWorldPos;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          vUv = uv;
+          vec3 pos = position;
+          // Subtle cylindrical bend along cylinder arc (zero hollow gap from side view)
+          pos.z += -pow(pos.x, 2.0) * 0.08;
+
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          vViewPosition = -mvPosition.xyz;
+          vNormal = normalize(normalMatrix * normal);
+
+          vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
+          vWorldPos = worldPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D map;
+        uniform float uTime;
+        uniform vec2 uMouse;
+        uniform float uActive;
+
+        varying vec2 vUv;
+        varying vec3 vWorldPos;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        float sdRoundedBox(vec2 p, vec2 b, float r) {
+          vec2 q = abs(p) - b + vec2(r);
+          return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+        }
+
+        vec2 getSDFNormal(vec2 p, vec2 b, float r) {
+          float eps = 0.001;
+          float d = sdRoundedBox(p, b, r);
+          float dx = sdRoundedBox(p + vec2(eps, 0.0), b, r) - d;
+          float dy = sdRoundedBox(p + vec2(0.0, eps), b, r) - d;
+          return normalize(vec2(dx, dy));
+        }
+
+        void main() {
+          vec2 p = vUv - 0.5;
+          vec2 b = vec2(0.49, 0.49);
+          float r = 0.08;
+
+          float dist = sdRoundedBox(p, b, r);
+          if (dist > 0.005) discard;
+          float alpha = 1.0 - smoothstep(-0.005, 0.005, dist);
+
+          vec4 texColor = texture2D(map, vUv);
+          vec3 col = texColor.rgb;
+
+          // View angle and Normal dynamics for Holo foil & Sparkles
+          vec3 viewDir = normalize(vViewPosition);
+          vec3 norm = normalize(vNormal);
+          float NdotV = clamp(dot(norm, viewDir), 0.0, 1.0);
+
+          // Layer A — Iridescent Terastal / Pokémon UR Prismatic Foil Sweep
+          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(norm.xy, uMouse * 0.35) + (1.0 - NdotV) * 0.5;
+          vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (diagAngle * 2.2 + uTime * 0.15 + vec3(0.0, 0.33, 0.67)));
+          float holoWave = sin(diagAngle * 9.0 + uTime * 0.9) * 0.5 + 0.5;
+          float holoMask = (0.35 + 0.65 * holoWave) * (0.30 + 0.70 * pow(1.0 - NdotV, 1.8));
+          col += rainbow * holoMask * (0.16 + 0.10 * uActive);
+
+          // Layer B — Top-Left & Bottom-Right 4-Point Star Glints & Moving Light Flares ("kilatan bercahaya")
+          // Strictly localize effect to Top-Left and Bottom-Right corners
+          float distTL = length(vUv - vec2(0.12, 0.88));
+          float distBR = length(vUv - vec2(0.88, 0.12));
+          float cornerMask = smoothstep(0.44, 0.04, distTL) * 1.25 + smoothstep(0.44, 0.04, distBR) * 1.05;
+
+          // 1. Moving dynamic light sweep / flash across the diagonal corners ("kilatan")
+          float sweepPhase = (vUv.x + vUv.y * 1.1) * 3.14159 - uTime * 2.2 + uMouse.x * 1.4;
+          float sweepFlash = pow(max(0.0, sin(sweepPhase)), 22.0) * 2.2;
+          float cornerFlash = sweepFlash * cornerMask;
+
+          // 2. Procedural 4-point star glints in corners ("bintang glittering")
+          vec2 starGrid = floor(vUv * vec2(14.0, 19.0));
+          vec2 starUv = fract(vUv * vec2(14.0, 19.0)) - 0.5;
+          float starRnd1 = fract(sin(dot(starGrid, vec2(127.1, 311.7))) * 43758.5453);
+          float starRnd2 = fract(sin(dot(starGrid, vec2(269.5, 183.3))) * 43758.5453);
+
+          vec2 starCenter = (vec2(starRnd1, starRnd2) - 0.5) * 0.42;
+          vec2 starDelta = starUv - starCenter;
+          vec2 starAbs = abs(starDelta);
+
+          // 4-point star cross-rays: sharp horizontal & vertical flares
+          float rayH = max(0.0, 1.0 - starAbs.x * 24.0) * max(0.0, 1.0 - starAbs.y * 3.2);
+          float rayV = max(0.0, 1.0 - starAbs.y * 24.0) * max(0.0, 1.0 - starAbs.x * 3.2);
+          float starCore = max(0.0, 1.0 - length(starDelta) * 12.0);
+          float starShape = starCore * 1.4 + pow(rayH + rayV, 2.0) * 2.8;
+
+          float starTwinkle = pow(max(0.0, sin(starRnd1 * 6.28318 + uTime * 2.8 + diagAngle * 5.0)), 16.0);
+          float gridStars = starShape * starTwinkle * cornerMask;
+
+          // 3. Hero moving star glints directly at Top-Left & Bottom-Right tips
+          vec2 heroTLPos = vec2(0.13, 0.87) + vec2(sin(uTime * 1.2), cos(uTime * 1.5)) * 0.025;
+          vec2 dHeroTL = abs(vUv - heroTLPos);
+          float heroRayTL = max(0.0, 1.0 - dHeroTL.x * 28.0) * max(0.0, 1.0 - dHeroTL.y * 3.5)
+                          + max(0.0, 1.0 - dHeroTL.y * 28.0) * max(0.0, 1.0 - dHeroTL.x * 3.5);
+          float heroCoreTL = max(0.0, 1.0 - length(dHeroTL) * 14.0);
+          float heroStarTL = (heroCoreTL * 1.6 + pow(heroRayTL, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4)), 10.0);
+
+          vec2 heroBRPos = vec2(0.87, 0.13) + vec2(cos(uTime * 1.1), sin(uTime * 1.4)) * 0.025;
+          vec2 dHeroBR = abs(vUv - heroBRPos);
+          float heroRayBR = max(0.0, 1.0 - dHeroBR.x * 28.0) * max(0.0, 1.0 - dHeroBR.y * 3.5)
+                          + max(0.0, 1.0 - dHeroBR.y * 28.0) * max(0.0, 1.0 - dHeroBR.x * 3.5);
+          float heroCoreBR = max(0.0, 1.0 - length(dHeroBR) * 14.0);
+          float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8)), 10.0);
+
+          // Blend stars and moving flashes
+          vec3 starColor = mix(vec3(1.0, 0.98, 0.90), rainbow, 0.35);
+          float starTotal = gridStars * 2.0 + (heroStarTL + heroStarBR) * 1.8 + cornerFlash * 0.8;
+          col += starColor * starTotal * (0.65 + 0.45 * uActive);
+
+          // Outer translucent glass bezel frame (Outer 5% border, -0.045 < dist < 0.0)
+          float frameMask = smoothstep(-0.045, -0.040, dist);
+          vec3 glassTint = vec3(0.96, 0.98, 1.0);
+          col = mix(col, mix(col, glassTint, 0.32), frameMask);
+
+          // Bright specular corner & edge highlights (Top-left & bottom-right rim glow)
+          vec2 n = getSDFNormal(p, b, r);
+          float weightTL = max(0.0, dot(n, normalize(vec2(-0.5, 0.85))));
+          float weightBR = max(0.0, dot(n, normalize(vec2(0.5, -0.85))));
+          float cornerWeight = pow(weightTL, 1.5) * 1.2 + pow(weightBR, 1.5) * 0.9 + 0.15;
+
+          float outerRim = smoothstep(-0.018, -0.002, dist);
+          float innerBezel = (smoothstep(-0.048, -0.042, dist) - smoothstep(-0.042, -0.036, dist)) * 1.8;
+          float specularHighlight = (outerRim * 0.85 + innerBezel * 0.65) * cornerWeight;
+          col += vec3(1.0) * specularHighlight;
+
+          // Delicate diagonal glass reflection band
+          float diagonalSheen = 0.06 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
+          col += vec3(diagonalSheen);
+
+          gl_FragColor = vec4(col, alpha);
+        }
+      `,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: true,
+    };
+  }, [texture]);
+
+  useFrame(({ clock, pointer }, delta) => {
+    if (!materialRef.current) return;
+    materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
+    materialRef.current.uniforms.uMouse.value.set(pointer.x, pointer.y);
+    const targetActive = (isActive || hovered) ? 1.0 : 0.45;
+    materialRef.current.uniforms.uActive.value = THREE.MathUtils.damp(
+      materialRef.current.uniforms.uActive.value,
+      targetActive,
+      8,
+      delta
+    );
+  });
+
+  return (
+    <mesh
+      onClick={onClick}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+    >
+      <planeGeometry args={[1.55, 2.08, 24, 24]} />
+      <shaderMaterial ref={materialRef} attach="material" {...shaderArgs} />
+    </mesh>
+  );
 }
 
 function CameraRig({ isMobile }: { isMobile: boolean }) {
   useFrame(({ camera }) => {
-    camera.lookAt(0, -0.05, 0);
+    camera.lookAt(0, 0, 0);
   });
   return null;
 }
@@ -57,9 +239,9 @@ function RingCard({
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
-    // Elegant, restrained scaling matching ui-ref-hero-focused.jpg (~50-55% screen height)
-    const targetScale = isActive ? 1.20 : anyActive ? (hovered ? 0.96 : 0.88) : (hovered ? 1.05 : 1.0);
-    const targetZOffset = isActive ? 0.42 : (hovered ? 0.12 : 0);
+    const targetScale = isActive ? 1.18 : anyActive ? 0.92 : 1.0;
+    const targetZOffset = isActive ? 0.45 : (hovered ? 0.12 : 0);
+    const targetY = hovered ? 0.12 : 0;
 
     meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
     meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
@@ -68,10 +250,9 @@ function RingCard({
     const forwardX = Math.sin(angle) * (radius + targetZOffset);
     const forwardZ = Math.cos(angle) * (radius + targetZOffset);
     meshRef.current.position.x = THREE.MathUtils.damp(meshRef.current.position.x, forwardX, 7, delta);
+    meshRef.current.position.y = THREE.MathUtils.damp(meshRef.current.position.y, targetY, 7, delta);
     meshRef.current.position.z = THREE.MathUtils.damp(meshRef.current.position.z, forwardZ, 7, delta);
   });
-
-  const animatedSrc = item.videoTextureSrc;
 
   const handleClick = (e: any) => {
     e.stopPropagation();
@@ -84,66 +265,37 @@ function RingCard({
       position={[baseX, 0, baseZ]}
       rotation={[0, angle, 0]}
     >
-      {/* Invisible Raycast Hit Box for 100% reliable click & hover targeting */}
-      <mesh
-        position={[0, 0, 0]}
-        onClick={handleClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-          document.body.style.cursor = 'pointer';
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          setHovered(false);
-          document.body.style.cursor = 'default';
-        }}
-      >
-        <boxGeometry args={[1.48, 1.94, 0.2]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-
-      {/* Thin Charcoal Backing Frame (1.34 x 1.80) */}
-      <RoundedBox args={[1.34, 1.80, 0.03]} radius={0.06} smoothness={4} onClick={handleClick}>
-        <meshBasicMaterial color="#211529" />
-      </RoundedBox>
-
-      {/* Full-Bleed Front Artwork Plane (1.28 x 1.74) */}
-      <mesh position={[0, 0, 0.018]} onClick={handleClick}>
-        <planeGeometry args={[1.28, 1.74]} />
-        <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
-          {animatedSrc ? (
-            <VideoPlaneMaterial src={animatedSrc} />
-          ) : (
-            <ImagePlaneMaterial src={item.posterSrc} />
-          )}
-        </Suspense>
-      </mesh>
-
-      {/* Full-Bleed Back Artwork Plane so cards are visible from behind */}
-      <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]} onClick={handleClick}>
-        <planeGeometry args={[1.28, 1.74]} />
-        <Suspense fallback={<meshBasicMaterial color={item.accentColor} />}>
-          {item.posterSrc ? (
-            <ImagePlaneMaterial src={item.posterSrc} />
-          ) : (
-            <meshBasicMaterial color={item.accentColor} />
-          )}
-        </Suspense>
-      </mesh>
+      <Suspense fallback={null}>
+        <GlassCardMesh
+          url={item.posterSrc}
+          isActive={isActive}
+          hovered={hovered}
+          onClick={handleClick}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={(e) => {
+            e.stopPropagation();
+            setHovered(false);
+            document.body.style.cursor = 'default';
+          }}
+        />
+      </Suspense>
 
       {/* Floating Yellow Flower Mascot Accent perched on the active card top-right */}
       {isActive && (
         <Html
-          position={[0.52, 0.82, 0.06]}
-          distanceFactor={3.2}
+          position={[0.66, 0.96, 0.08]}
+          distanceFactor={3.4}
           pointerEvents="none"
         >
-          <div className="relative animate-bounce -translate-x-1/2 -translate-y-1/2 filter drop-shadow-lg">
+          <div className="relative animate-bounce -translate-x-1/2 -translate-y-1/2 filter drop-shadow-md">
             <img
               src="/assets/mascots/flower-yellow.png"
               alt="Yellow Flower Mascot Accent"
-              className="w-14 h-14 object-contain select-none pointer-events-none"
+              className="w-12 h-12 object-contain select-none pointer-events-none"
             />
           </div>
         </Html>
@@ -156,14 +308,17 @@ function RingStage({
   activeIndex,
   onSelect,
   scrollRotationRef,
+  onFrontChange,
 }: {
   activeIndex: number | null;
   onSelect: (i: number) => void;
   scrollRotationRef: React.MutableRefObject<number>;
+  onFrontChange: (i: number) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const total = RING_SHOWCASE_ITEMS.length;
-  const radius = 3.4;
+  const radius = 3.8;
+  const lastFrontRef = useRef<number>(-1);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -173,22 +328,33 @@ function RingStage({
       6,
       delta
     );
+
+    // Accurately determine front-center card during dragging / spinning
+    const currentRot = groupRef.current.rotation.y;
+    const rawIndex = ((-currentRot / (Math.PI * 2)) % total + total) % total;
+    const currentFront = Math.round(rawIndex) % total;
+    if (currentFront !== lastFrontRef.current) {
+      lastFrontRef.current = currentFront;
+      onFrontChange(currentFront);
+    }
   });
 
   return (
-    <group ref={groupRef}>
-      {RING_SHOWCASE_ITEMS.map((item, i) => (
-        <RingCard
-          key={item.id}
-          item={item}
-          index={i}
-          total={total}
-          radius={radius}
-          isActive={activeIndex === i}
-          anyActive={activeIndex !== null}
-          onSelect={onSelect}
-        />
-      ))}
+    <group rotation={[0.06, 0, 0]}>
+      <group ref={groupRef}>
+        {RING_SHOWCASE_ITEMS.map((item, i) => (
+          <RingCard
+            key={item.id}
+            item={item}
+            index={i}
+            total={total}
+            radius={radius}
+            isActive={activeIndex === i}
+            anyActive={activeIndex !== null}
+            onSelect={onSelect}
+          />
+        ))}
+      </group>
     </group>
   );
 }
@@ -212,7 +378,6 @@ export default function CircularRingHero() {
 
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      // Only spin ring when user is in the hero section
       if (typeof window !== 'undefined' && window.scrollY > window.innerHeight) return;
       scrollRotationRef.current += e.deltaY * 0.0022;
     };
@@ -261,7 +426,6 @@ export default function CircularRingHero() {
     if (hasMovedRef.current) return;
     setActiveIndex(index);
 
-    // Shortest angular rotation to bring selected card to front
     const total = RING_SHOWCASE_ITEMS.length;
     const baseTarget = -(index / total) * Math.PI * 2;
     const currentRot = scrollRotationRef.current;
@@ -295,35 +459,37 @@ export default function CircularRingHero() {
 
       <Canvas
         camera={{
-          position: [0, isMobile ? 2.3 : 1.95, isMobile ? 11.2 : 8.8],
-          fov: isMobile ? 40 : 34,
+          position: [0, isMobile ? 0.6 : 0.35, isMobile ? 11.5 : 9.6],
+          fov: isMobile ? 38 : 32,
         }}
         dpr={[1, 1.5]}
       >
         <ambientLight intensity={1.25} />
-        <directionalLight position={[4, 7, 5]} intensity={0.9} />
+        <directionalLight position={[4, 8, 6]} intensity={1.0} />
+        <directionalLight position={[-4, 4, -4]} intensity={0.4} color="#F6EDE4" />
         <CameraRig isMobile={isMobile} />
         <RingStage
           activeIndex={activeIndex}
           onSelect={handleSelect}
           scrollRotationRef={scrollRotationRef}
+          onFrontChange={(idx) => setActiveIndex(idx)}
         />
-        {/* Soft floor shadow under cards */}
+        {/* Subtle, soft warm floor shadow */}
         <ContactShadows
           position={[0, -1.02, 0]}
-          opacity={0.32}
-          scale={11}
-          blur={2.0}
-          far={4}
-          color="#211529"
+          opacity={0.16}
+          scale={14}
+          blur={2.8}
+          far={4.5}
+          color="#8C7A6B"
         />
       </Canvas>
 
-      {/* Spacious Bottom-Left Focused Campaign Overlay matching ui-ref-hero-focused.jpg */}
+      {/* Clean absolute bottom-left caption box inside Hero section */}
       {activeItem && (
-        <div className="absolute bottom-8 md:bottom-12 left-6 md:left-12 z-20 max-w-lg pointer-events-auto bg-[var(--bg-card)]/90 md:bg-transparent backdrop-blur-md md:backdrop-blur-none p-5 md:p-0 rounded-2xl border border-[var(--border-hairline)] md:border-none shadow-xl md:shadow-none transition-all">
+        <div className="absolute bottom-8 left-8 z-20 max-w-md translate-x-0 pointer-events-auto bg-[#F6EDE4]/85 dark:bg-[#211529]/85 backdrop-blur-md p-5 rounded-2xl border border-current/10 shadow-lg transition-all">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#211529] text-[#F6EDE4] font-bold">
+            <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#F6EDE4] dark:text-[#211529] font-bold">
               {activeItem.indexLabel} / {activeItem.category}
             </span>
             <span
@@ -334,11 +500,11 @@ export default function CircularRingHero() {
             </span>
           </div>
 
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
+          <h2 className="text-xl md:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight leading-snug">
             {activeItem.title}
           </h2>
 
-          <p className="text-sm text-[var(--text-muted)] mt-1.5 mb-3 leading-relaxed">
+          <p className="text-xs text-[var(--text-muted)] mt-1.5 mb-3 leading-relaxed">
             Client:{' '}
             <a
               href={activeItem.clientUrl}
@@ -359,15 +525,15 @@ export default function CircularRingHero() {
 
           <a
             href={`#campaign-${activeItem.id}`}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#211529] text-[#F6EDE4] text-xs font-mono font-bold tracking-wider hover:bg-[#1388E5] transition-colors shadow-md"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#F6EDE4] dark:text-[#211529] text-xs font-mono font-bold tracking-wider hover:opacity-85 transition-opacity shadow-sm"
           >
             VIEW CAMPAIGN ↗
           </a>
         </div>
       )}
 
-      {/* Bottom Right Interactive Card Navigator */}
-      <div className="absolute bottom-8 sm:bottom-10 right-6 sm:right-10 md:right-24 z-20 flex items-center gap-2 bg-[var(--bg-card)]/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-[var(--border-hairline)] shadow-lg font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
+      {/* Bottom Right Interactive Card Navigator anchored absolutely inside Hero */}
+      <div className="absolute bottom-8 right-6 sm:right-10 md:right-16 z-20 flex items-center gap-2 bg-[var(--bg-card)]/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-[var(--border-hairline)] shadow-lg font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
         <button
           type="button"
           onClick={() => handleNavigate('prev')}

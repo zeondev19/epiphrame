@@ -4,6 +4,9 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'EPIPHRAME — Illustration Collective & Character AI Ad Studio',
   description: 'Quirky human-drawn character art & scroll-stopping ads for AI worlds.',
+  icons: {
+    icon: '/assets/mascots/flower-yellow.png',
+  },
 }
 
 export default function RootLayout({
