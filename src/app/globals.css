@@ -23,3 +23,18 @@
   --text-muted: #D1CAEA;
   --border-hairline: rgba(246, 237, 228, 0.15);
 }
+
+/* Hide default native browser scrollbar across Chrome, Edge, Safari, and Firefox */
+html,
+body,
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0px !important;
+  height: 0px !important;
+}

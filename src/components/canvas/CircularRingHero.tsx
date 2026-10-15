@@ -2,20 +2,30 @@
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Html, useTexture, ContactShadows } from '@react-three/drei';
+import { Html, ContactShadows } from '@react-three/drei';
+import { useVideoTexture } from '@react-three/drei/core/VideoTexture';
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+function CardFallback() {
+  return (
+    <mesh>
+      <planeGeometry args={[1.22, 2.16, 24, 24]} />
+      <meshBasicMaterial color="#1f1627" transparent opacity={0.6} />
+    </mesh>
+  );
+}
+
 function GlassCardMesh({
-  url,
+  videoUrl,
   isActive,
   hovered,
   onClick,
   onPointerOver,
   onPointerOut,
 }: {
-  url: string;
+  videoUrl: string;
   isActive: boolean;
   hovered: boolean;
   onClick: (e: any) => void;
@@ -23,8 +33,20 @@ function GlassCardMesh({
   onPointerOut: (e: any) => void;
 }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const texture = useTexture(url);
+  const texture = useVideoTexture(videoUrl, {
+    muted: true,
+    loop: true,
+    start: true,
+    playsInline: true,
+    crossOrigin: 'anonymous',
+    unsuspend: 'loadedmetadata',
+  });
   texture.colorSpace = THREE.SRGBColorSpace;
+
+  const cardWidth = 1.22;
+  const cardHeight = 2.16;
+  const cardAspect = cardWidth / cardHeight; // ~0.5648
+  const videoAspect = 576.0 / 1024.0; // exact 9:16 = 0.5625
 
   const shaderArgs = useMemo(() => {
     return {
@@ -33,6 +55,8 @@ function GlassCardMesh({
         uTime: { value: 0 },
         uMouse: { value: new THREE.Vector2(0, 0) },
         uActive: { value: 0.45 },
+        uAspect: { value: cardAspect },
+        uTexAspect: { value: videoAspect },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -43,8 +67,8 @@ function GlassCardMesh({
         void main() {
           vUv = uv;
           vec3 pos = position;
-          // Subtle cylindrical bend along cylinder arc (zero hollow gap from side view)
-          pos.z += -pow(pos.x, 2.0) * 0.08;
+          // Smooth cylindrical bend along cylinder arc (radius 3.8)
+          pos.z += -pow(pos.x, 2.0) * 0.12;
 
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
           vViewPosition = -mvPosition.xyz;
@@ -60,6 +84,8 @@ function GlassCardMesh({
         uniform float uTime;
         uniform vec2 uMouse;
         uniform float uActive;
+        uniform float uAspect;
+        uniform float uTexAspect;
 
         varying vec2 vUv;
         varying vec3 vWorldPos;
@@ -80,41 +106,53 @@ function GlassCardMesh({
         }
 
         void main() {
-          vec2 p = vUv - 0.5;
-          vec2 b = vec2(0.49, 0.49);
-          float r = 0.08;
+          // 1. Aspect-corrected geometry space
+          vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
+          vec2 b = vec2(uAspect * 0.5 - 0.005, 0.5 - 0.005);
+          float r = 0.055;
 
           float dist = sdRoundedBox(p, b, r);
           if (dist > 0.005) discard;
-          float alpha = 1.0 - smoothstep(-0.005, 0.005, dist);
+          float alpha = 1.0 - smoothstep(-0.004, 0.004, dist);
 
-          vec4 texColor = texture2D(map, vUv);
+          // View and normal vectors for optical calculations
+          vec3 V = normalize(vViewPosition);
+          vec3 N = normalize(vNormal);
+          float ndv = clamp(dot(N, V), 0.0, 1.0);
+          float grazing = pow(max(0.0, 1.0 - ndv), 2.5);
+
+          // 2. Crisp 100% video sampling (object-fit: cover, 0% distortion, 100% clean center)
+          vec2 texUv = vUv;
+          if (uAspect > uTexAspect) {
+            float scale = uAspect / uTexAspect;
+            texUv.y = (vUv.y - 0.5) * scale + 0.5;
+          } else if (uAspect < uTexAspect) {
+            float scale = uTexAspect / uAspect;
+            texUv.x = (vUv.x - 0.5) * scale + 0.5;
+          }
+
+          vec4 texColor = texture2D(map, texUv);
           vec3 col = texColor.rgb;
 
-          // View angle and Normal dynamics for Holo foil & Sparkles
-          vec3 viewDir = normalize(vViewPosition);
-          vec3 norm = normalize(vNormal);
-          float NdotV = clamp(dot(norm, viewDir), 0.0, 1.0);
-
-          // Layer A — Iridescent Terastal / Pokémon UR Prismatic Foil Sweep
-          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(norm.xy, uMouse * 0.35) + (1.0 - NdotV) * 0.5;
+          // 3. Layer A — Iridescent Prismatic Foil Sweep (Subtle & clean)
+          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(N.xy, uMouse * 0.35) + (1.0 - ndv) * 0.5;
           vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (diagAngle * 2.2 + uTime * 0.15 + vec3(0.0, 0.33, 0.67)));
           float holoWave = sin(diagAngle * 9.0 + uTime * 0.9) * 0.5 + 0.5;
-          float holoMask = (0.35 + 0.65 * holoWave) * (0.30 + 0.70 * pow(1.0 - NdotV, 1.8));
+          float holoMask = (0.35 + 0.65 * holoWave) * (0.30 + 0.70 * pow(1.0 - ndv, 1.8));
           col += rainbow * holoMask * (0.16 + 0.10 * uActive);
 
-          // Layer B — Top-Left & Bottom-Right 4-Point Star Glints & Moving Light Flares ("kilatan bercahaya")
-          // Strictly localize effect to Top-Left and Bottom-Right corners
+          // 4. Layer B — 4-Point Star Glints & Moving Light Sweep (STRICTLY CORNERS ONLY)
+          // Top-left and bottom-right corners only - Center is 100% UNTOUCHED
           float distTL = length(vUv - vec2(0.12, 0.88));
           float distBR = length(vUv - vec2(0.88, 0.12));
           float cornerMask = smoothstep(0.44, 0.04, distTL) * 1.25 + smoothstep(0.44, 0.04, distBR) * 1.05;
 
-          // 1. Moving dynamic light sweep / flash across the diagonal corners ("kilatan")
+          // Dynamic light sweep / flash across the diagonal corners ("kilatan")
           float sweepPhase = (vUv.x + vUv.y * 1.1) * 3.14159 - uTime * 2.2 + uMouse.x * 1.4;
           float sweepFlash = pow(max(0.0, sin(sweepPhase)), 22.0) * 2.2;
           float cornerFlash = sweepFlash * cornerMask;
 
-          // 2. Procedural 4-point star glints in corners ("bintang glittering")
+          // Procedural 4-point star glints in corners
           vec2 starGrid = floor(vUv * vec2(14.0, 19.0));
           vec2 starUv = fract(vUv * vec2(14.0, 19.0)) - 0.5;
           float starRnd1 = fract(sin(dot(starGrid, vec2(127.1, 311.7))) * 43758.5453);
@@ -124,7 +162,7 @@ function GlassCardMesh({
           vec2 starDelta = starUv - starCenter;
           vec2 starAbs = abs(starDelta);
 
-          // 4-point star cross-rays: sharp horizontal & vertical flares
+          // Sharp 4-point star cross-rays
           float rayH = max(0.0, 1.0 - starAbs.x * 24.0) * max(0.0, 1.0 - starAbs.y * 3.2);
           float rayV = max(0.0, 1.0 - starAbs.y * 24.0) * max(0.0, 1.0 - starAbs.x * 3.2);
           float starCore = max(0.0, 1.0 - length(starDelta) * 12.0);
@@ -133,7 +171,7 @@ function GlassCardMesh({
           float starTwinkle = pow(max(0.0, sin(starRnd1 * 6.28318 + uTime * 2.8 + diagAngle * 5.0)), 16.0);
           float gridStars = starShape * starTwinkle * cornerMask;
 
-          // 3. Hero moving star glints directly at Top-Left & Bottom-Right tips
+          // Hero moving star glints at Top-Left & Bottom-Right tips
           vec2 heroTLPos = vec2(0.13, 0.87) + vec2(sin(uTime * 1.2), cos(uTime * 1.5)) * 0.025;
           vec2 dHeroTL = abs(vUv - heroTLPos);
           float heroRayTL = max(0.0, 1.0 - dHeroTL.x * 28.0) * max(0.0, 1.0 - dHeroTL.y * 3.5)
@@ -148,29 +186,39 @@ function GlassCardMesh({
           float heroCoreBR = max(0.0, 1.0 - length(dHeroBR) * 14.0);
           float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8)), 10.0);
 
-          // Blend stars and moving flashes
           vec3 starColor = mix(vec3(1.0, 0.98, 0.90), rainbow, 0.35);
           float starTotal = gridStars * 2.0 + (heroStarTL + heroStarBR) * 1.8 + cornerFlash * 0.8;
           col += starColor * starTotal * (0.65 + 0.45 * uActive);
 
-          // Outer translucent glass bezel frame (Outer 5% border, -0.045 < dist < 0.0)
-          float frameMask = smoothstep(-0.045, -0.040, dist);
-          vec3 glassTint = vec3(0.96, 0.98, 1.0);
-          col = mix(col, mix(col, glassTint, 0.32), frameMask);
+          // 5. GlassAiButton LUMINOUS NEON BORDER (KEPT EXACTLY AS YOU LIKED)
+          float outerStroke = smoothstep(-0.018, -0.002, dist);
+          float innerGlow = exp(-pow(max(0.0, -dist - 0.015) / 0.040, 2.0));
 
-          // Bright specular corner & edge highlights (Top-left & bottom-right rim glow)
-          vec2 n = getSDFNormal(p, b, r);
-          float weightTL = max(0.0, dot(n, normalize(vec2(-0.5, 0.85))));
-          float weightBR = max(0.0, dot(n, normalize(vec2(0.5, -0.85))));
-          float cornerWeight = pow(weightTL, 1.5) * 1.2 + pow(weightBR, 1.5) * 0.9 + 0.15;
+          // Angle of border point and tracking of cursor
+          float borderAngle = atan(p.y, p.x);
+          float mouseAngle = atan(uMouse.y, uMouse.x);
+          float cursorTracking = 0.5 + 0.5 * cos(borderAngle - mouseAngle);
 
-          float outerRim = smoothstep(-0.018, -0.002, dist);
-          float innerBezel = (smoothstep(-0.048, -0.042, dist) - smoothstep(-0.042, -0.036, dist)) * 1.8;
-          float specularHighlight = (outerRim * 0.85 + innerBezel * 0.65) * cornerWeight;
-          col += vec3(1.0) * specularHighlight;
+          vec3 neonBlue = vec3(0.08, 0.48, 1.1);
+          vec3 neonPurple = vec3(0.70, 0.22, 0.98);
+          vec3 neonCyan = vec3(0.18, 0.88, 1.0);
 
-          // Delicate diagonal glass reflection band
-          float diagonalSheen = 0.06 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
+          vec3 strokeGradient = mix(neonBlue, neonPurple, sin(borderAngle * 2.0 + uTime * 0.7) * 0.5 + 0.5);
+          strokeGradient = mix(strokeGradient, neonCyan, cursorTracking * 0.65);
+
+          float luminousRim = (outerStroke * 1.5 + innerGlow * 0.55) * (0.8 + 0.7 * cursorTracking + 0.5 * uActive);
+
+          // Translucent glass bezel frame tint
+          float frameMask = smoothstep(-0.040, -0.032, dist);
+          vec3 glassTint = mix(vec3(0.92, 0.96, 1.0), strokeGradient, 0.35);
+          col = mix(col, mix(col, glassTint, 0.28), frameMask);
+
+          // Apply luminous neon border stroke & grazing Fresnel sheen
+          col += strokeGradient * luminousRim;
+          col += vec3(1.0) * grazing * 0.38 * (0.8 + 0.4 * uActive);
+
+          // Subtle diagonal glass reflection
+          float diagonalSheen = 0.05 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
           col += vec3(diagonalSheen);
 
           gl_FragColor = vec4(col, alpha);
@@ -180,7 +228,7 @@ function GlassCardMesh({
       side: THREE.DoubleSide,
       depthWrite: true,
     };
-  }, [texture]);
+  }, [texture, cardAspect, videoAspect]);
 
   useFrame(({ clock, pointer }, delta) => {
     if (!materialRef.current) return;
@@ -201,7 +249,7 @@ function GlassCardMesh({
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
     >
-      <planeGeometry args={[1.55, 2.08, 24, 24]} />
+      <planeGeometry args={[cardWidth, cardHeight, 24, 24]} />
       <shaderMaterial ref={materialRef} attach="material" {...shaderArgs} />
     </mesh>
   );
@@ -265,9 +313,9 @@ function RingCard({
       position={[baseX, 0, baseZ]}
       rotation={[0, angle, 0]}
     >
-      <Suspense fallback={null}>
+      <Suspense fallback={<CardFallback />}>
         <GlassCardMesh
-          url={item.posterSrc}
+          videoUrl={item.src}
           isActive={isActive}
           hovered={hovered}
           onClick={handleClick}
@@ -287,7 +335,7 @@ function RingCard({
       {/* Floating Yellow Flower Mascot Accent perched on the active card top-right */}
       {isActive && (
         <Html
-          position={[0.66, 0.96, 0.08]}
+          position={[0.54, 1.02, 0.08]}
           distanceFactor={3.4}
           pointerEvents="none"
         >
@@ -374,6 +422,21 @@ export default function CircularRingHero() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const resumeVideos = () => {
+      const videos = document.querySelectorAll<HTMLVideoElement>('video');
+      videos.forEach((v) => {
+        if (v.paused) v.play().catch(() => {});
+      });
+    };
+    window.addEventListener('click', resumeVideos);
+    window.addEventListener('touchstart', resumeVideos);
+    return () => {
+      window.removeEventListener('click', resumeVideos);
+      window.removeEventListener('touchstart', resumeVideos);
+    };
   }, []);
 
   useEffect(() => {
