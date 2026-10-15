@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SITE_COPY } from '@/data/siteContent';
-import { Sparkles, Eye, Palette, Film } from 'lucide-react';
+import { Layers, Sparkles, Wand2, Film } from 'lucide-react';
 
 export function WhyHumanArt() {
   return (
@@ -13,138 +13,118 @@ export function WhyHumanArt() {
       <div id="manifesto" className="absolute -top-16" />
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] font-extrabold border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
-            01 / WHY HUMAN ART WINS
+        <div className="flex items-center gap-2.5 mb-6">
+          <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] dark:bg-[#F9F6F0] dark:text-[#141316] font-bold border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
+            01 / STUDIO CRAFT
           </span>
           <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider">
-            THE MANIFESTO FOR CHARACTER AI
+            FROM FIRST THUMBNAIL TO 60FPS DELIVERY
           </span>
         </div>
 
-        {/* Big Editorial Headline */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
+        {/* Editorial Headline & Studio Philosophy */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mb-16">
           <div className="lg:col-span-8">
-            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[var(--text-primary)] tracking-tight leading-[1.08] mb-8">
-              {SITE_COPY.manifestoHeadline}
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[var(--text-primary)] tracking-tight leading-[1.08] mb-6">
+              Original characters built to survive the feed.
             </h2>
-            <p className="text-lg sm:text-xl text-[var(--text-muted)] leading-relaxed font-normal max-w-3xl">
-              {SITE_COPY.manifestoBody}
+            <p className="text-base sm:text-lg text-[var(--text-muted)] leading-relaxed max-w-2xl">
+              Template prompts blur together on social feeds. We develop characters from thumbnail silhouettes to full turnaround model sheets and 2D keyframe animation, giving AI platforms and game worlds an unmistakable visual signature.
             </p>
 
-            {/* Manifesto Pills */}
-            <div className="flex flex-wrap gap-3 mt-8">
-              {SITE_COPY.manifestoPills.map((pill, idx) => {
-                const accents = ['#FF425E', '#F3A72E', '#204A36'];
-                const accent = accents[idx % accents.length];
-                return (
-                  <span
-                    key={pill}
-                    className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm font-bold px-4 py-2 rounded-full border border-[#141316]/20 bg-[var(--bg-card)] text-[var(--text-primary)] shadow-[2px_2px_0px_0px_#141316]"
-                  >
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: accent }}
-                    />
-                    {pill}
-                  </span>
-                );
-              })}
+            <div className="flex flex-wrap gap-2.5 mt-6 font-mono text-xs">
+              <span className="px-3.5 py-1.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-hairline)] text-[var(--text-primary)] font-bold">
+                Cintiq &amp; Procreate Roughs
+              </span>
+              <span className="px-3.5 py-1.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-hairline)] text-[var(--text-primary)] font-bold">
+                Full Turnarounds &amp; Expression Packs
+              </span>
+              <span className="px-3.5 py-1.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-hairline)] text-[var(--text-primary)] font-bold">
+                60fps Live2D &amp; 9:16 Video Reels
+              </span>
             </div>
           </div>
 
-          <div className="lg:col-span-4 bg-[var(--bg-card)] rounded-3xl p-6 sm:p-8 border border-[#141316]/20 shadow-[5px_5px_0px_0px_#141316] relative overflow-hidden">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-[#F3A72E]" />
-              <span className="font-mono text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
-                HUMAN RETENTION BENCHMARK
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs font-mono mb-1">
-                  <span className="text-[var(--text-muted)] font-semibold">Generic AI Ad</span>
-                  <span className="font-bold text-[#8C4351]">0.4s Drop-off</span>
-                </div>
-                <div className="w-full bg-[var(--bg-surface)] h-2.5 rounded-full overflow-hidden border border-[#141316]/15">
-                  <div className="bg-[#8C4351] h-full w-[12%]" />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs font-mono mb-1">
-                  <span className="text-[var(--text-primary)] font-bold">Epiphrame Hand-Crafted</span>
-                  <span className="font-bold text-[#204A36]">3.8s Hook Hold (9.5x)</span>
-                </div>
-                <div className="w-full bg-[var(--bg-surface)] h-2.5 rounded-full overflow-hidden border border-[#141316]/15">
-                  <div className="bg-[#204A36] h-full w-[95%]" />
-                </div>
-              </div>
-            </div>
-            <p className="font-mono text-[11px] text-[var(--text-muted)] mt-5 leading-normal">
-              *Verified across Cycle AI & Hangjam TikTok & Reels campaign cohorts.
-            </p>
+          <div className="lg:col-span-4 rounded-3xl p-6 sm:p-7 bg-[var(--bg-card)] border border-[#141316]/18 shadow-[4px_4px_0px_0px_#141316] dark:shadow-[4px_4px_0px_0px_#FF425E]">
+            <h3 className="font-mono text-xs font-black uppercase tracking-wider text-[var(--text-primary)] mb-3">
+              Production Standards
+            </h3>
+            <ul className="space-y-3 font-mono text-xs text-[var(--text-muted)]">
+              <li className="flex items-start gap-2">
+                <span className="text-[#FF425E] font-bold">01.</span>
+                <span>Anatomy &amp; silhouette verified at 100px mobile icon scale before cleanup.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#F3A72E] font-bold">02.</span>
+                <span>Complete color schemes formatted with hex tokens for marketing teams.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#204A36] dark:text-[#52B788] font-bold">03.</span>
+                <span>Layered PSDs &amp; Live2D rigs prepared for in-engine or paid video exports.</span>
+              </li>
+            </ul>
           </div>
         </div>
 
         {/* Featured Visual: Studio Isometric Key Art */}
-        <div id="character-lab" className="relative rounded-3xl overflow-hidden border border-[#141316]/20 bg-[var(--bg-card)] shadow-[6px_6px_0px_0px_#141316] mb-16 scroll-mt-24">
+        <div id="character-lab" className="relative rounded-3xl overflow-hidden border border-[#141316]/20 bg-[var(--bg-card)] shadow-[5px_5px_0px_0px_#141316] mb-14 scroll-mt-24">
           <div className="aspect-[16/9] md:aspect-[21/9] w-full relative">
             <img
               src="/assets/showcase/studio-isometric.webp"
               alt="Inside the Epiphrame Creative Lab"
               className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#141316]/90 via-transparent to-transparent flex items-end p-6 sm:p-10">
-              <div className="max-w-2xl text-white">
-                <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#FF425E] text-white font-extrabold border border-white/30 mb-3 inline-block shadow-sm">
-                  INSIDE THE LAB · 100% HAND-DRAWN
+            <div className="absolute inset-0 bg-gradient-to-t from-[#141316]/90 via-[#141316]/30 to-transparent flex items-end p-6 sm:p-10">
+              <div className="max-w-xl text-white">
+                <span className="font-mono text-[11px] uppercase tracking-widest px-3 py-1 rounded-full bg-[#FF425E] text-white font-extrabold border border-white/30 mb-2.5 inline-block">
+                  INSIDE THE WORKSHOP
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
-                  Where quirky storytelling meets viral ad performance.
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight mb-1.5">
+                  Hand-crafted character IP for interactive worlds.
                 </h3>
-                <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-light">
-                  From first thumbnail sketch on Procreate to frame-by-frame 2D animation, our artists build believable characters that gamers and roleplayers fall in love with.
+                <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-normal">
+                  Our collective handles every phase in-house: concept thumbnails, model sheets, Discord sticker reactions, and animated paid social hooks.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 3 Core Value Cards */}
+        {/* 3 Pipeline Stages (Concrete, Not Cliché Feature Cards) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] hover:shadow-[5px_5px_0px_0px_#FF425E] hover:-translate-y-0.5 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-[#141316] border border-[#141316] text-[#F3A72E] flex items-center justify-center mb-6 shadow-sm">
-              <Eye className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <h4 className="text-xl font-black text-[var(--text-primary)] mb-3">
-              Uncanny Valley Free
+          <div className="p-7 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#F9F6F0]/20">
+            <span className="font-mono text-xs font-black text-[#FF425E] mb-2 block">
+              PHASE 01
+            </span>
+            <h4 className="text-lg font-black text-[var(--text-primary)] mb-2">
+              Thumbnails &amp; Silhouette
             </h4>
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              No six-fingered hands, melted pupils, or plastic sheen. Every silhouette, fabric fold, and smirk is placed with human intent.
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              We sketch contrasting silhouette shapes first to guarantee the character is readable in a fraction of a second while scrolling vertical feeds.
             </p>
           </div>
 
-          <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] hover:shadow-[5px_5px_0px_0px_#FF425E] hover:-translate-y-0.5 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-[#141316] border border-[#141316] text-[#FF425E] flex items-center justify-center mb-6 shadow-sm">
-              <Palette className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <h4 className="text-xl font-black text-[var(--text-primary)] mb-3">
-              Universe & Lore Cohesion
+          <div className="p-7 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#F9F6F0]/20">
+            <span className="font-mono text-xs font-black text-[#F3A72E] mb-2 block">
+              PHASE 02
+            </span>
+            <h4 className="text-lg font-black text-[var(--text-primary)] mb-2">
+              Turnarounds &amp; Expressions
             </h4>
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              We design full expression turnaround sheets (blush, angry, flirty, cryptic) that keep AI character bots consistent across endless chats.
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              Rigid model turnaround sheets with multi-angle perspectives and emotional expression suites so roleplay bots maintain visual consistency.
             </p>
           </div>
 
-          <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] hover:shadow-[5px_5px_0px_0px_#FF425E] hover:-translate-y-0.5 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-[#141316] border border-[#141316] text-[#204A36] dark:text-[#52B788] flex items-center justify-center mb-6 shadow-sm">
-              <Film className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <h4 className="text-xl font-black text-[var(--text-primary)] mb-3">
-              Conversion-Ready Formats
+          <div className="p-7 rounded-2xl bg-[var(--bg-card)] border border-[#141316]/18 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#F9F6F0]/20">
+            <span className="font-mono text-xs font-black text-[#204A36] dark:text-[#52B788] mb-2 block">
+              PHASE 03
+            </span>
+            <h4 className="text-lg font-black text-[var(--text-primary)] mb-2">
+              Keyframe Motion &amp; Hooks
             </h4>
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              Delivered in 9:16 TikTok ad reels with burned-in captions, Discord reaction GIF stickers, and 4K App Store promotional panoramas.
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              Frame-by-frame 2D animation, Live2D rigging, and sound-synced video cuts formatted directly for 9:16 TikTok, Reels, and Discord sticker drops.
             </p>
           </div>
         </div>

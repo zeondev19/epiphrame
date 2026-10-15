@@ -17,17 +17,17 @@ export function ArtistCollectiveStrip() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] dark:bg-[#F9F6F0] dark:text-[#141316] font-black border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
-                04 / THE COLLECTIVE : MEET THE HANDS BEHIND THE ART
+                04 / THE COLLECTIVE : RESIDENT ARTISTS &amp; STYLISTS
               </span>
               <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider hidden sm:inline-block">
-                0% AI SLOP
+                STUDIO ROSTER
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-[var(--text-primary)] tracking-tight">
-              Human Illustrators Behind Every Viral Feed
+              Resident Illustrators &amp; Motion Designers
             </h2>
             <p className="text-base sm:text-lg text-[var(--text-muted)] mt-2 max-w-2xl">
-              Real human artists flexing 50M+ combined campaign views for leading AI character and roleplay worlds.
+              Four resident artists specializing in character model sheets, Live2D rigging, color palettes, and cinematic key visuals.
             </p>
           </div>
 
@@ -92,16 +92,16 @@ export function ArtistCollectiveStrip() {
                     {artist.specialty}
                   </p>
 
-                  {/* Sombong / Flex Achievement Pills */}
+                  {/* Tool Stack & Specialties */}
                   <div className="space-y-1.5 mb-5">
                     {artist.sombongBadges.map((badge) => (
                       <div
                         key={badge}
                         className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--text-primary)] font-bold bg-[var(--bg-surface)] px-2.5 py-1.5 rounded-xl border border-[var(--border-hairline)] shadow-xs"
                       >
-                        <Award
-                          className="w-3.5 h-3.5 flex-shrink-0"
-                          style={{ color: artist.emblemColor }}
+                        <span
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: artist.emblemColor }}
                         />
                         <span className="truncate">{badge}</span>
                       </div>

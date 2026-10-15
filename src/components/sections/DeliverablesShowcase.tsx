@@ -167,10 +167,10 @@ export function DeliverablesShowcase() {
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-[var(--text-primary)] tracking-tight">
-              High-Converting Character Deliverables
+              Campaign Deliverables &amp; Formats
             </h2>
             <p className="text-base sm:text-lg text-[var(--text-muted)] mt-2 max-w-2xl">
-              From thumb-stopping 9:16 TikTok ad reels to Discord reaction sticker packs and App Store panoramas, hand-drawn by human artists.
+              Production assets tailored for mobile game and character worlds: 9:16 video ads, turnaround sheets, animated reaction stickers, and store key art.
             </p>
           </div>
 

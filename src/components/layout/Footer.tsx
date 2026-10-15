@@ -27,7 +27,7 @@ export function Footer({ onOpenInquiry }: FooterProps) {
             </p>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[#141316]/25 font-mono text-xs font-bold text-[var(--text-primary)] shadow-[2px_2px_0px_0px_#141316]">
               <Sparkles className="w-3.5 h-3.5 text-[#F3A72E] fill-[#F3A72E]" />
-              <span>100% Hand-Crafted Human Art · 0% AI Slop</span>
+              <span>Human-Crafted Illustration &amp; Motion Studio</span>
             </div>
           </div>
 
@@ -38,18 +38,18 @@ export function Footer({ onOpenInquiry }: FooterProps) {
             </h4>
             <ul className="space-y-2.5 font-mono text-xs">
               <li>
-                <Link href="/#manifesto" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
-                  01 / WHY HUMAN ART WINS
+                <Link href="/#process" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
+                  01 / STUDIO PIPELINE
                 </Link>
               </li>
               <li>
-                <Link href="/#campaigns" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
-                  02 / SELECTED CAMPAIGNS
+                <Link href="/#showcase" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
+                  02 / CAMPAIGN DELIVERABLES
                 </Link>
               </li>
               <li>
                 <Link href="/artists" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
-                  03 / ARTIST ROSTER & SKETCHES
+                  03 / RESIDENT ARTISTS
                 </Link>
               </li>
               <li>
@@ -79,7 +79,7 @@ export function Footer({ onOpenInquiry }: FooterProps) {
                 rel="noreferrer"
                 className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#FF425E] hover:text-[#FF425E] transition-colors group"
               >
-                <span className="font-bold text-[var(--text-primary)] group-hover:text-[#FF425E]">Cycle AI — Mobile UA Campaigns</span>
+                <span className="font-bold text-[var(--text-primary)] group-hover:text-[#FF425E]">Cycle AI : Mobile UA Campaigns</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#FF425E]" />
               </a>
               <a
@@ -88,7 +88,7 @@ export function Footer({ onOpenInquiry }: FooterProps) {
                 rel="noreferrer"
                 className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] hover:border-[#204A36] hover:text-[#204A36] transition-colors group"
               >
-                <span className="font-bold text-[var(--text-primary)]">Hangjam — Interactive Bot Lore</span>
+                <span className="font-bold text-[var(--text-primary)]">Hangjam : Interactive Bot Lore</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[#204A36]" />
               </a>
             </div>

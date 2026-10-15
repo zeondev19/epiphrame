@@ -131,12 +131,9 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
         <Link
           href={isArtists ? '/#character-lab' : '#character-lab'}
           onClick={() => handleScrollTo('character-lab')}
-          className="hover:text-[#FF425E] dark:hover:text-[#FFD400] transition-colors relative py-1 inline-flex items-center"
+          className="hover:text-[#FF425E] dark:hover:text-[#FFD400] transition-colors relative py-1"
         >
-          <span>CHARACTER LAB</span>
-          <span className="bg-[#FF66B2] text-white text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ml-1.5 leading-none shadow-sm">
-            NEW
-          </span>
+          CHARACTER LAB
         </Link>
         <Link
           href={isArtists ? '/#process' : '#process'}
@@ -223,12 +220,9 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
           <Link
             href={isArtists ? '/#character-lab' : '#character-lab'}
             onClick={() => handleScrollTo('character-lab')}
-            className="flex items-center py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
+            className="block py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
           >
-            <span>CHARACTER LAB</span>
-            <span className="bg-[#FF66B2] text-white text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ml-2 leading-none">
-              NEW
-            </span>
+            CHARACTER LAB
           </Link>
           <Link
             href={isArtists ? '/#process' : '#process'}

@@ -122,13 +122,13 @@ export function CommissionArcade() {
         {/* Section Header */}
         <div className="text-center mb-14">
           <span className="inline-block font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#FFD400] text-[#211529] font-black border border-[#141316] shadow-[2px_2px_0px_0px_#141316] mb-3">
-            05 / COMMISSION BRIEF ARCADE
+            05 / PROJECT INQUIRY
           </span>
           <h2 className="text-3xl sm:text-5xl font-black text-[var(--text-primary)] tracking-tight">
-            Ready to frame your next viral character campaign?
+            Ready to frame your next character campaign?
           </h2>
           <p className="text-base sm:text-lg text-[var(--text-muted)] mt-3 max-w-xl mx-auto">
-            Build your brief below. 100% human-drawn character art, zero prompt templates, 48-hour proposal turnaround.
+            Submit your project scope below. Direct collaboration with resident artists, transparent milestones, and a 48-hour proposal turnaround.
           </p>
         </div>
 
@@ -343,7 +343,7 @@ export function CommissionArcade() {
                 className="w-full py-4 rounded-2xl bg-[#FF425E] hover:bg-[#E8334E] text-white font-mono text-sm font-black tracking-wider border-2 border-[#141316] shadow-[4px_4px_0px_0px_#141316] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#141316] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
-                <span>{isSubmitting ? 'TRANSMITTING BRIEF...' : 'TRANSMIT COMMISSION BRIEF ↗'}</span>
+                <span>{isSubmitting ? 'SUBMITTING BRIEF...' : 'SUBMIT COMMISSION BRIEF ↗'}</span>
               </button>
             </form>
           )}

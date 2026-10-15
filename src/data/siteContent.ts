@@ -43,15 +43,15 @@ export interface ArtistProfile {
 
 export const SITE_COPY = {
   brandName: 'EPIPHRAME',
-  tagline: 'Quirky human-drawn character art & scroll-stopping ads for AI worlds.',
-  heroHint: 'SCROLL UP/DOWN TO SPIN RING · CLICK ANY CARD TO FOCUS',
-  manifestoHeadline: 'Feeds are flooded with identical AI art. Hand-drawn work stops the scroll.',
+  tagline: 'Human illustration collective crafting original character art and motion ads for modern worlds.',
+  heroHint: 'SPIN RING TO EXPLORE · SELECT CARD TO INSPECT',
+  manifestoHeadline: 'Distinct silhouettes, deliberate acting, and hand-crafted character lore.',
   manifestoBody:
-    'Prompt-generated ads drop off in 0.4 seconds because viewers recognize the template. We illustrate original characters, looping stickers, and ad sequences for platforms like Cycle AI and Hangjam, drawn frame by frame by actual artists.',
+    'Template prompts blur together on feeds. We design characters from thumbnail sketches to final 60fps animations, giving AI storytelling platforms and game studios an unmistakable visual signature.',
   manifestoPills: [
-    '100% Hand-Crafted by Human Artists',
-    '50M+ Combined Campaign Views',
-    'Image · Animated GIF · Video Ad Reels',
+    'Hand-Drawn Illustration',
+    'Full Turnaround & Expression Sheets',
+    '9:16 Vertical Motion & Reaction Stickers',
   ],
 };
 
@@ -70,8 +70,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_1.webm',
     posterSrc: '/assets/cards/card-01.webp',
     accentColor: '#FF425E',
-    metricsBadge: '14.2M Views · 3.8x CTR',
-    description: 'Hand-drawn animated POV hook and character expression sheet for Cycle AI mobile user acquisition.',
+    metricsBadge: '9:16 Vertical Reel · 60 FPS',
+    description: 'Animated character hook and expressive date scenario designed for mobile acquisition feeds.',
   },
   {
     id: 'hangjam-alchemist-02',
@@ -87,8 +87,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_2.webm',
     posterSrc: '/assets/cards/card-02.webp',
     accentColor: '#204A36',
-    metricsBadge: 'Top #1 Trending Bot Art',
-    description: 'Original character design and potion-cloud sprite pack for Hangjam interactive storytelling.',
+    metricsBadge: 'Turnaround Sheet · Expression Pack',
+    description: 'Character model sheet with potion VFX sprites built for interactive narrative bots.',
   },
   {
     id: 'epiphrame-dj-gif-03',
@@ -104,8 +104,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_3.webm',
     posterSrc: '/assets/cards/card-03.webp',
     accentColor: '#F3A72E',
-    metricsBadge: 'Looping 60fps Sticker Set',
-    description: 'Playful looping turntable and flower mascot collection built for Discord and in-app reactions.',
+    metricsBadge: 'Looping Sticker · 60 FPS',
+    description: 'Playful turntable mascot loop designed for Discord servers and community reactions.',
   },
   {
     id: 'cycle-skater-04',
@@ -121,8 +121,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_4.webm',
     posterSrc: '/assets/cards/card-04.webp',
     accentColor: '#FF425E',
-    metricsBadge: '9.6M TikTok & Reels Views',
-    description: 'High-contrast pop-color character illustration engineered to stop thumb-scroll on vertical feeds.',
+    metricsBadge: 'Feed Motion Hook · Paid Social',
+    description: 'Dynamic pop-color character artwork formatted to capture thumb-scroll in the first second.',
   },
   {
     id: 'hangjam-painter-05',
@@ -138,8 +138,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_5.webm',
     posterSrc: '/assets/cards/card-05.webp',
     accentColor: '#F3A72E',
-    metricsBadge: 'Featured App Store Banner',
-    description: 'Vibrant cobalt-and-sunshine promotional illustration showcasing custom character creation.',
+    metricsBadge: 'Panoramic Key Visual · App Store',
+    description: 'Vibrant promotional illustration showcasing character customization environments.',
   },
   {
     id: 'hangjam-monster-gif-06',
@@ -155,8 +155,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_6.webm',
     posterSrc: '/assets/cards/card-06.webp',
     accentColor: '#204A36',
-    metricsBadge: '850K+ In-App Chats',
-    description: 'Quirky three-eyed botanical spirit mascot with looping flower animation.',
+    metricsBadge: 'Reaction Sticker · Animated Mascot',
+    description: 'Three-eyed botanical mascot with continuous loop animation for user greetings.',
   },
   {
     id: 'cycle-midnight-07',
@@ -172,8 +172,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_7.webm',
     posterSrc: '/assets/cards/card-07.webp',
     accentColor: '#FF425E',
-    metricsBadge: '11.4M Views · 42% Hook Rate',
-    description: 'Dramatic convenience store lighting and strawberry-milk POV animation crafted for paid social.',
+    metricsBadge: 'Anime POV Sequence · 9:16',
+    description: 'Dramatic convenience store night lighting and character interaction designed for video ads.',
   },
   {
     id: 'epiphrame-tablet-08',
@@ -189,8 +189,8 @@ export const RING_SHOWCASE_ITEMS: RingShowcaseItem[] = [
     videoTextureSrc: '/assets/hero_card/card_8.webm',
     posterSrc: '/assets/cards/card-08.webp',
     accentColor: '#141316',
-    metricsBadge: '100% Human Hand-Drawn',
-    description: 'Celebrates the human illustrators behind every Epiphrame character campaign.',
+    metricsBadge: 'Concept Lore Sheet · Full Color',
+    description: 'Studio key visual highlighting the human drawing process behind every character campaign.',
   },
 ];
 
@@ -199,15 +199,15 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     id: 'iris',
     name: 'Iris',
     role: 'Art Director & Lead Pop Illustrator',
-    specialty: 'Quirky Character Pop, Color Systems & Viral Hook Art',
+    specialty: 'Bold color palettes, stylized proportions, and viral character hooks.',
     avatarSrc: '/assets/mascots/flower-yellow.png',
     emblemColor: '#F3A72E',
     sombongBadges: [
-      '25M+ Ad Views Drawn',
-      'Lead Palette & Vibe Architect',
-      '100% Hand-Drawn (0% AI Slop)',
+      'Procreate & Clip Studio Paint',
+      'Lead Palette & Character Stylist',
+      'Cycle AI & Original Mascot IP',
     ],
-    bio: 'Architect of Epiphrame’s signature "quirky yet elegant" visual language, turning bold color blocks and expressive faces into scroll-stopping character campaigns.',
+    bio: 'Designs Epiphrame’s graphic visual language, blending clean shapes and expressive facial acting into memorable character silhouettes.',
     sketchComparison: {
       title: 'Cycle AI: Starlight Companion Ad',
       client: 'Cycle AI',
@@ -216,19 +216,19 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     },
     vaultItems: [
       {
-        title: 'Procreate Speedpaint Timelapse (0:15)',
+        title: 'Procreate Process Recording',
         mediaFormat: 'video',
         src: '/assets/media/cycle-ad-reel.mp4',
         posterSrc: '/assets/cards/card-01.webp',
       },
       {
-        title: 'Bouncy Flower & Character Emote Loop',
+        title: 'Character Emote Animation',
         mediaFormat: 'gif',
         src: '/assets/media/hangjam-sticker.gif',
         posterSrc: '/assets/cards/card-01.webp',
       },
       {
-        title: 'Final Campaign Key Art (4K)',
+        title: 'Final Campaign Key Art',
         mediaFormat: 'image',
         src: '/assets/cards/card-04.webp',
         posterSrc: '/assets/cards/card-04.webp',
@@ -238,16 +238,16 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
   {
     id: 'raka',
     name: 'Raka',
-    role: 'Lead Motion & Live2D Animator',
-    specialty: '2D Frame-by-Frame Animation, Live2D & High-Retention Video Ads',
+    role: 'Lead 2D & Motion Animator',
+    specialty: 'Frame-by-frame 2D animation, Live2D rigging, and vertical video pacing.',
     avatarSrc: '/assets/mascots/frame-blue.png',
     emblemColor: '#FF425E',
     sombongBadges: [
-      '18M+ Video Ad Plays',
-      'Cycle AI & Hangjam Motion Lead',
-      '60fps Frame-by-Frame Craft',
+      'Live2D Cubism & After Effects',
+      'Frame-by-Frame Motion Director',
+      'High-Retention Vertical Ad Cuts',
     ],
-    bio: 'Brings static character illustrations to life with fluid hair physics, micro-expressions, and kinetic typography tailored for TikTok, Reels, and YouTube Shorts.',
+    bio: 'Brings static character illustrations to life with secondary hair motion, natural breathing loops, and kinetic timing for mobile screens.',
     sketchComparison: {
       title: 'Hangjam: Portal Fantasy Hook',
       client: 'Hangjam',
@@ -256,19 +256,19 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     },
     vaultItems: [
       {
-        title: 'Keyframe-to-Final Motion Breakdown',
+        title: 'Keyframe Motion Breakdown',
         mediaFormat: 'video',
         src: '/assets/media/cycle-ad-reel.mp4',
         posterSrc: '/assets/cards/card-02.webp',
       },
       {
-        title: 'Animated Character Blink & Wave GIF',
+        title: 'Character Blink & Wave Loop',
         mediaFormat: 'gif',
         src: '/assets/media/hangjam-sticker.gif',
         posterSrc: '/assets/cards/card-02.webp',
       },
       {
-        title: 'Character Turnaround Sheet',
+        title: 'Turnaround Model Sheet',
         mediaFormat: 'image',
         src: '/assets/cards/card-02.webp',
         posterSrc: '/assets/cards/card-02.webp',
@@ -279,15 +279,15 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     id: 'nadia',
     name: 'Nadia',
     role: 'Senior Webtoon & Expression Specialist',
-    specialty: 'Emotional Storytelling, Webtoon Panels & Romantic/Drama Ad Hooks',
+    specialty: 'Expressive eye work, webtoon panelling, and narrative character arcs.',
     avatarSrc: '/assets/mascots/flower-pink.png',
     emblemColor: '#FF66B2',
     sombongBadges: [
-      '3.9x Average Ad CTR',
-      '120+ Original AI Personas Drawn',
-      'Master of Micro-Expressions',
+      'Clip Studio Paint & Photoshop',
+      'Full Expression Turnaround Sheets',
+      'Interactive Lore & Romance Hooks',
     ],
-    bio: 'Specializes in first-frame emotional hooks: drawing the exact blush, smirk, or cliffhanger panel that makes viewers tap "Download" immediately.',
+    bio: 'Focuses on emotional hook frames, drawing nuanced expressions from subtle smiles to dramatic shifts that deepen player immersion.',
     sketchComparison: {
       title: 'Cycle AI: Rival to Lover Story Ad',
       client: 'Cycle AI',
@@ -296,19 +296,19 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     },
     vaultItems: [
       {
-        title: 'Lineart & Cel-Shading Process Reel',
+        title: 'Lineart & Cel-Shade Process',
         mediaFormat: 'video',
         src: '/assets/media/cycle-ad-reel.mp4',
         posterSrc: '/assets/cards/card-03.webp',
       },
       {
-        title: 'Sticker Reaction Loop (GIF)',
+        title: 'Reaction Sticker Loop',
         mediaFormat: 'gif',
         src: '/assets/media/hangjam-sticker.gif',
         posterSrc: '/assets/cards/card-03.webp',
       },
       {
-        title: 'Vertical Story Ad Composite',
+        title: 'Vertical Story Composite',
         mediaFormat: 'image',
         src: '/assets/cards/card-03.webp',
         posterSrc: '/assets/cards/card-03.webp',
@@ -319,15 +319,15 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     id: 'bima',
     name: 'Bima',
     role: 'Worldbuilding & Key Art Illustrator',
-    specialty: 'Isometric Environments, Props & App Store Feature Banners',
+    specialty: 'Isometric environments, detailed prop sheets, and wide panoramic banners.',
     avatarSrc: '/assets/mascots/star-green.png',
     emblemColor: '#204A36',
     sombongBadges: [
-      'Featured on Play Store & App Store',
-      'Environment & Prop Virtuoso',
-      'Zero-Template Custom Worlds',
+      'Blender Blockout & Photoshop',
+      'App Store Panorama Specialist',
+      'Isometric World & Prop Architecture',
     ],
-    bio: 'Builds lush, tactile worlds and perspective scenes that make digital character platforms feel like living, breathing universes.',
+    bio: 'Crafts rich perspective scenes and tactile environments that ground characters in believable, atmospheric worlds.',
     sketchComparison: {
       title: 'Hangjam: Creator Playground Key Art',
       client: 'Hangjam',
@@ -336,13 +336,13 @@ export const ARTISTS_ROSTER: ArtistProfile[] = [
     },
     vaultItems: [
       {
-        title: 'World Blocking to Final Render Reel',
+        title: 'Environment Blockout to Render',
         mediaFormat: 'video',
         src: '/assets/media/cycle-ad-reel.mp4',
         posterSrc: '/assets/cards/card-04.webp',
       },
       {
-        title: 'Animated Prop & Mascot Loop (GIF)',
+        title: 'Animated Prop & Mascot Loop',
         mediaFormat: 'gif',
         src: '/assets/media/hangjam-sticker.gif',
         posterSrc: '/assets/cards/card-04.webp',

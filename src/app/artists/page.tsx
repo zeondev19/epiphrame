@@ -90,13 +90,13 @@ export default function ArtistsPage() {
 
       {/* Main Content Container */}
       <div className="pt-28 md:pt-36 pb-20 max-w-7xl mx-auto px-6">
-        {/* Section Tagline matching ui-ref-artists-page.jpg */}
+        {/* Section Tagline */}
         <div className="flex items-center gap-3 mb-6">
           <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] font-extrabold border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
-            02 / THE ARTIST COLLECTIVE — REAL HUMAN CRAFT
+            02 / THE ARTIST COLLECTIVE : RESIDENT CRAFT &amp; TOOLING
           </span>
           <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider hidden sm:inline">
-            ZERO GENERATIVE AI SLOP · 100% HAND DRAWN
+            FOUR RESIDENT ARTISTS · HAND-DRAWN PRODUCTION
           </span>
         </div>
 
@@ -171,7 +171,7 @@ export default function ArtistsPage() {
             </div>
 
             <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-4">
-              Drag the golden handle to reveal how {selectedArtist.name} evolves raw human pencil lines into high-converting ad artwork.
+              Drag the slider handle to inspect how {selectedArtist.name} evolves structural pencil sketches into finished production artwork.
             </p>
 
             {/* Interactive Slider Component */}
@@ -202,7 +202,7 @@ export default function ArtistsPage() {
             </div>
 
             <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-4">
-              Watch {selectedArtist.name}&apos;s real hand-drawn execution timelapse and viral character assets.
+              Explore {selectedArtist.name}&apos;s process timelapses, turnarounds, and animated deliverables.
             </p>
 
             {/* Reel Player Screen */}
@@ -319,14 +319,14 @@ export default function ArtistsPage() {
                 </span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
-                {selectedArtist.name} — {selectedArtist.role}
+                {selectedArtist.name} : {selectedArtist.role}
               </h2>
               <p className="text-sm sm:text-base text-[var(--text-muted)] mt-2 max-w-3xl leading-relaxed">
                 {selectedArtist.bio}
               </p>
             </div>
 
-            {/* Prominent Sombong Action Buttons matching ui-ref-artists-page.jpg */}
+            {/* Prominent Action Buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <span className="py-2.5 px-5 rounded-full bg-[#204A36] text-[#F9F6F0] font-mono text-xs sm:text-sm font-extrabold tracking-wider border-2 border-[#141316] shadow-[2px_2px_0px_0px_#141316] flex items-center gap-2">
                 <Award className="w-4 h-4 stroke-[2.5]" />
@@ -348,10 +348,10 @@ export default function ArtistsPage() {
             </div>
           </div>
 
-          {/* Full Sombong Badges Grid */}
+          {/* Full Tool Stack & Specialties Grid */}
           <div className="pt-8">
             <h4 className="font-mono text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] mb-4">
-              PROVEN PERFORMANCE & HONORS ({selectedArtist.name.toUpperCase()})
+              STUDIO TOOLING &amp; PRODUCTION FOCUS ({selectedArtist.name.toUpperCase()})
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {selectedArtist.sombongBadges.map((badge, idx) => (
@@ -373,7 +373,7 @@ export default function ArtistsPage() {
                       {badge}
                     </span>
                     <span className="font-mono text-[10px] text-[var(--text-muted)]">
-                      Verified Client Milestone
+                      Studio Tool &amp; Specialty
                     </span>
                   </div>
                 </div>

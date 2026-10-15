@@ -62,10 +62,10 @@ export function SketchToFinalSlider({
         </div>
       </div>
       <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/95 text-[#141316] border border-[#141316] font-mono text-[11px] font-bold shadow-sm pointer-events-none">
-        RAW HUMAN SKETCH
+        PENCIL SKETCH
       </span>
       <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#FF425E] text-white font-mono text-[11px] font-bold shadow-sm pointer-events-none">
-        FINAL VIRAL AD
+        FINAL PRODUCTION ART
       </span>
     </div>
   );

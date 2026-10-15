@@ -506,7 +506,7 @@ function CenterpieceHeading3D({ isMobile }: { isMobile: boolean }) {
 
       ctx.fillStyle = '#FF425E';
       ctx.font = '800 25px Fredoka, ui-monospace, sans-serif';
-      ctx.fillText('✦ 100% HUMAN DRAWN ✦', 1024, 110);
+      ctx.fillText('✦ CHARACTER & MOTION STUDIO ✦', 1024, 110);
       ctx.restore();
 
       // 2. Playful, Energetic Pop Headline "EPIPHRAME" (Riso Acid Coral with Deep Sumi Ink Stroke)
@@ -764,17 +764,12 @@ export default function CircularRingHero() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      {/* Top Studio Positioning Header (Requirement 3) */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none w-full max-w-3xl px-4">
-        <span className="inline-block font-mono text-[11px] uppercase tracking-widest px-3.5 py-1 rounded-full border border-current/15 bg-[var(--bg-surface)]/70 backdrop-blur-sm text-[var(--text-primary)]">
-          SCROLL UP/DOWN TO SPIN RING · CLICK ANY CARD TO FOCUS
+      {/* Top Hero Interaction Guidance */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none w-full max-w-xl px-4">
+        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest px-4 py-1.5 rounded-full border border-[#141316]/15 dark:border-[#F9F6F0]/20 bg-[var(--bg-surface)]/85 backdrop-blur-md text-[var(--text-primary)] shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-[#FF425E] animate-pulse" />
+          SPIN RING TO EXPLORE · SELECT CARD TO INSPECT
         </span>
-        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-[var(--text-primary)] mt-2">
-          Human-Drawn Character Art &amp; Viral Ads for AI Worlds.
-        </h1>
-        <p className="font-mono text-xs text-[var(--text-muted)] mt-1">
-          100% Human Illustrators · Character IP Sheets · 9:16 Motion Ads
-        </p>
       </div>
 
       <WebGLErrorBoundary>

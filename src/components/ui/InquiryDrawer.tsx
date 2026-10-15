@@ -164,9 +164,9 @@ export function InquiryDrawer({
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6">
                   Thank you, <span className="font-bold text-[var(--text-primary)]">{formData.name}</span>.
-                  Ayesha, Zeon, Raka, Bima, and the Epiphrame collective have received your project inquiry for{' '}
+                  Iris, Raka, Nadia, Bima, and the Epiphrame collective have received your project inquiry for{' '}
                   <span className="font-semibold text-[var(--text-primary)]">{formData.company}</span>.
-                  We&apos;ll get back to you within 24 hours with sketch concepts and palette ideas.
+                  We&apos;ll get back to you within 24 to 48 hours with scope details and scheduling options.
                 </p>
                 <div className="w-full bg-[var(--bg-surface)] rounded-xl p-4 border border-[var(--border-hairline)] text-left mb-6 font-mono text-xs text-[var(--text-muted)] space-y-1">
                   <div><strong className="text-[var(--text-primary)]">Format:</strong> {formData.projectType}</div>
@@ -254,11 +254,11 @@ export function InquiryDrawer({
                     }
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-surface)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[#FF425E]"
                   >
-                    <option value="video-ad-campaign">Video Ad Campaign (9:16 Hook & Reels)</option>
-                    <option value="character-design">100% Hand-Drawn Character Design Sheet</option>
-                    <option value="animated-stickers">Animated GIF & Discord Reaction Pack</option>
-                    <option value="worldbuilding-key-art">Isometric Worlds & App Store Key Art</option>
-                    <option value="full-custom-package">Full Character Platform Launch Squad</option>
+                    <option value="video-ad-campaign">Video Ad Campaign (9:16 Vertical Video)</option>
+                    <option value="character-design">Character Design &amp; Turnaround Sheet</option>
+                    <option value="animated-stickers">Animated GIF &amp; Discord Reaction Pack</option>
+                    <option value="worldbuilding-key-art">Isometric Worlds &amp; App Store Key Art</option>
+                    <option value="full-custom-package">Full Character Platform Launch Package</option>
                   </select>
                 </div>
 
@@ -348,7 +348,7 @@ export function InquiryDrawer({
           <div className="pt-6 border-t border-[var(--border-hairline)] text-center">
             <p className="font-mono text-[11px] text-[var(--text-muted)] flex items-center justify-center gap-1.5 font-bold">
               <Sparkles className="w-3.5 h-3.5 text-[#F3A72E] fill-[#F3A72E]" />
-              100% Hand-Crafted by Real Human Illustrators
+              Hand-Drawn &amp; Animated by Collective Artists
             </p>
           </div>
         </div>
