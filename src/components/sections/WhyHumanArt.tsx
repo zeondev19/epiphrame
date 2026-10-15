@@ -7,9 +7,10 @@ import { Sparkles, Eye, Palette, Film } from 'lucide-react';
 export function WhyHumanArt() {
   return (
     <section
-      id="manifesto"
+      id="process"
       className="relative w-full py-24 md:py-36 bg-[var(--bg-surface)] border-t border-[var(--border-hairline)]"
     >
+      <div id="manifesto" className="absolute -top-16" />
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -86,7 +87,7 @@ export function WhyHumanArt() {
         </div>
 
         {/* Featured Visual: Studio Isometric Key Art */}
-        <div className="relative rounded-3xl overflow-hidden border border-[#141316]/20 bg-[var(--bg-card)] shadow-[6px_6px_0px_0px_#141316] mb-16">
+        <div id="character-lab" className="relative rounded-3xl overflow-hidden border border-[#141316]/20 bg-[var(--bg-card)] shadow-[6px_6px_0px_0px_#141316] mb-16 scroll-mt-24">
           <div className="aspect-[16/9] md:aspect-[21/9] w-full relative">
             <img
               src="/assets/showcase/studio-isometric.webp"

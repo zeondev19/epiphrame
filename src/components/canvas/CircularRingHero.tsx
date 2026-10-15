@@ -2,11 +2,12 @@
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Html, ContactShadows } from '@react-three/drei';
+import { Html, ContactShadows, useTexture } from '@react-three/drei';
 import { useVideoTexture } from '@react-three/drei/core/VideoTexture';
 import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { WebGLErrorBoundary } from '@/components/canvas/WebGLErrorBoundary';
 
 function CardFallback() {
   return (
@@ -17,15 +18,17 @@ function CardFallback() {
   );
 }
 
-function GlassCardMesh({
-  videoUrl,
+function GlassCardMeshInner({
+  texture,
+  cardIndex,
   isActive,
   hovered,
   onClick,
   onPointerOver,
   onPointerOut,
 }: {
-  videoUrl: string;
+  texture: THREE.Texture;
+  cardIndex: number;
   isActive: boolean;
   hovered: boolean;
   onClick: (e: any) => void;
@@ -33,16 +36,6 @@ function GlassCardMesh({
   onPointerOut: (e: any) => void;
 }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const texture = useVideoTexture(videoUrl, {
-    muted: true,
-    loop: true,
-    start: true,
-    playsInline: true,
-    crossOrigin: 'anonymous',
-    unsuspend: 'loadedmetadata',
-  });
-  texture.colorSpace = THREE.SRGBColorSpace;
-
   const cardWidth = 1.22;
   const cardHeight = 2.16;
   const cardAspect = cardWidth / cardHeight; // ~0.5648
@@ -57,6 +50,7 @@ function GlassCardMesh({
         uActive: { value: 0.45 },
         uAspect: { value: cardAspect },
         uTexAspect: { value: videoAspect },
+        uCardIndex: { value: Number(cardIndex) },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -86,6 +80,7 @@ function GlassCardMesh({
         uniform float uActive;
         uniform float uAspect;
         uniform float uTexAspect;
+        uniform float uCardIndex;
 
         varying vec2 vUv;
         varying vec3 vWorldPos;
@@ -134,29 +129,29 @@ function GlassCardMesh({
           vec4 texColor = texture2D(map, texUv);
           vec3 col = texColor.rgb;
 
-          // 3. Layer A — Iridescent Prismatic Foil Sweep (Subtle & clean)
-          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(N.xy, uMouse * 0.35) + (1.0 - ndv) * 0.5;
+          // 3. Layer A - Iridescent Prismatic Foil Sweep (Subtle & clean)
+          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(N.xy, uMouse * 0.35) + (1.0 - ndv) * 0.5 + uCardIndex * 0.4;
           vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (diagAngle * 2.2 + uTime * 0.15 + vec3(0.0, 0.33, 0.67)));
           float holoWave = sin(diagAngle * 9.0 + uTime * 0.9) * 0.5 + 0.5;
           float holoMask = (0.35 + 0.65 * holoWave) * (0.30 + 0.70 * pow(1.0 - ndv, 1.8));
           col += rainbow * holoMask * (0.16 + 0.10 * uActive);
 
-          // 4. Layer B — 4-Point Star Glints & Moving Light Sweep (STRICTLY CORNERS ONLY)
+          // 4. Layer B - 4-Point Star Glints & Moving Light Sweep (STRICTLY CORNERS ONLY)
           // Top-left and bottom-right corners only - Center is 100% UNTOUCHED
           float distTL = length(vUv - vec2(0.12, 0.88));
           float distBR = length(vUv - vec2(0.88, 0.12));
           float cornerMask = smoothstep(0.44, 0.04, distTL) * 1.25 + smoothstep(0.44, 0.04, distBR) * 1.05;
 
           // Dynamic light sweep / flash across the diagonal corners ("kilatan")
-          float sweepPhase = (vUv.x + vUv.y * 1.1) * 3.14159 - uTime * 2.2 + uMouse.x * 1.4;
+          float sweepPhase = (vUv.x + vUv.y * 1.1) * 3.14159 - uTime * 2.2 + uMouse.x * 1.4 + uCardIndex * 1.1;
           float sweepFlash = pow(max(0.0, sin(sweepPhase)), 22.0) * 2.2;
           float cornerFlash = sweepFlash * cornerMask;
 
           // Procedural 4-point star glints in corners
           vec2 starGrid = floor(vUv * vec2(14.0, 19.0));
           vec2 starUv = fract(vUv * vec2(14.0, 19.0)) - 0.5;
-          float starRnd1 = fract(sin(dot(starGrid, vec2(127.1, 311.7))) * 43758.5453);
-          float starRnd2 = fract(sin(dot(starGrid, vec2(269.5, 183.3))) * 43758.5453);
+          float starRnd1 = fract(sin(dot(starGrid + uCardIndex * 7.0, vec2(127.1, 311.7))) * 43758.5453);
+          float starRnd2 = fract(sin(dot(starGrid + uCardIndex * 13.0, vec2(269.5, 183.3))) * 43758.5453);
 
           vec2 starCenter = (vec2(starRnd1, starRnd2) - 0.5) * 0.42;
           vec2 starDelta = starUv - starCenter;
@@ -172,19 +167,19 @@ function GlassCardMesh({
           float gridStars = starShape * starTwinkle * cornerMask;
 
           // Hero moving star glints at Top-Left & Bottom-Right tips
-          vec2 heroTLPos = vec2(0.13, 0.87) + vec2(sin(uTime * 1.2), cos(uTime * 1.5)) * 0.025;
+          vec2 heroTLPos = vec2(0.13, 0.87) + vec2(sin(uTime * 1.2 + uCardIndex), cos(uTime * 1.5 + uCardIndex)) * 0.025;
           vec2 dHeroTL = abs(vUv - heroTLPos);
           float heroRayTL = max(0.0, 1.0 - dHeroTL.x * 28.0) * max(0.0, 1.0 - dHeroTL.y * 3.5)
                           + max(0.0, 1.0 - dHeroTL.y * 28.0) * max(0.0, 1.0 - dHeroTL.x * 3.5);
           float heroCoreTL = max(0.0, 1.0 - length(dHeroTL) * 14.0);
-          float heroStarTL = (heroCoreTL * 1.6 + pow(heroRayTL, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4)), 10.0);
+          float heroStarTL = (heroCoreTL * 1.6 + pow(heroRayTL, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + uCardIndex)), 10.0);
 
-          vec2 heroBRPos = vec2(0.87, 0.13) + vec2(cos(uTime * 1.1), sin(uTime * 1.4)) * 0.025;
+          vec2 heroBRPos = vec2(0.87, 0.13) + vec2(cos(uTime * 1.1 + uCardIndex), sin(uTime * 1.4 + uCardIndex)) * 0.025;
           vec2 dHeroBR = abs(vUv - heroBRPos);
           float heroRayBR = max(0.0, 1.0 - dHeroBR.x * 28.0) * max(0.0, 1.0 - dHeroBR.y * 3.5)
                           + max(0.0, 1.0 - dHeroBR.y * 28.0) * max(0.0, 1.0 - dHeroBR.x * 3.5);
           float heroCoreBR = max(0.0, 1.0 - length(dHeroBR) * 14.0);
-          float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8)), 10.0);
+          float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8 + uCardIndex)), 10.0);
 
           vec3 starColor = mix(vec3(1.0, 0.95, 0.4), vec3(1.0, 0.20, 0.60), 0.35);
           float starTotal = gridStars * 2.0 + (heroStarTL + heroStarBR) * 1.8 + cornerFlash * 0.8;
@@ -228,7 +223,7 @@ function GlassCardMesh({
       side: THREE.DoubleSide,
       depthWrite: true,
     };
-  }, [texture, cardAspect, videoAspect]);
+  }, [texture, cardAspect, videoAspect, cardIndex]);
 
   useFrame(({ clock, pointer }, delta) => {
     if (!materialRef.current) return;
@@ -249,9 +244,126 @@ function GlassCardMesh({
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
     >
-      <planeGeometry args={[cardWidth, cardHeight, 24, 24]} />
+      <planeGeometry args={[cardWidth, cardHeight, 32, 32]} />
       <shaderMaterial ref={materialRef} attach="material" {...shaderArgs} />
     </mesh>
+  );
+}
+
+function ImageCardMesh({
+  url,
+  cardIndex,
+  isActive,
+  hovered,
+  onClick,
+  onPointerOver,
+  onPointerOut,
+}: {
+  url: string;
+  cardIndex: number;
+  isActive: boolean;
+  hovered: boolean;
+  onClick: (e: any) => void;
+  onPointerOver: (e: any) => void;
+  onPointerOut: (e: any) => void;
+}) {
+  const texture = useTexture(url);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return (
+    <GlassCardMeshInner
+      texture={texture}
+      cardIndex={cardIndex}
+      isActive={isActive}
+      hovered={hovered}
+      onClick={onClick}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+    />
+  );
+}
+
+function VideoCardMesh({
+  url,
+  cardIndex,
+  isActive,
+  hovered,
+  onClick,
+  onPointerOver,
+  onPointerOut,
+}: {
+  url: string;
+  cardIndex: number;
+  isActive: boolean;
+  hovered: boolean;
+  onClick: (e: any) => void;
+  onPointerOver: (e: any) => void;
+  onPointerOut: (e: any) => void;
+}) {
+  const texture = useVideoTexture(url, {
+    muted: true,
+    loop: true,
+    start: true,
+    playsInline: true,
+    crossOrigin: 'anonymous',
+    unsuspend: 'loadedmetadata',
+  });
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return (
+    <GlassCardMeshInner
+      texture={texture}
+      cardIndex={cardIndex}
+      isActive={isActive}
+      hovered={hovered}
+      onClick={onClick}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+    />
+  );
+}
+
+function GlassCardMesh({
+  item,
+  cardIndex,
+  isActive,
+  hovered,
+  onClick,
+  onPointerOver,
+  onPointerOut,
+}: {
+  item: RingShowcaseItem;
+  cardIndex: number;
+  isActive: boolean;
+  hovered: boolean;
+  onClick: (e: any) => void;
+  onPointerOver: (e: any) => void;
+  onPointerOut: (e: any) => void;
+}) {
+  const isVideo = item.src.endsWith('.webm') || item.src.endsWith('.mp4');
+  if (isVideo) {
+    return (
+      <VideoCardMesh
+        url={item.src}
+        cardIndex={cardIndex}
+        isActive={isActive}
+        hovered={hovered}
+        onClick={onClick}
+        onPointerOver={onPointerOver}
+        onPointerOut={onPointerOut}
+      />
+    );
+  }
+  return (
+    <ImageCardMesh
+      url={item.src}
+      cardIndex={cardIndex}
+      isActive={isActive}
+      hovered={hovered}
+      onClick={onClick}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+    />
   );
 }
 
@@ -324,7 +436,8 @@ function RingCard({
     >
       <Suspense fallback={<CardFallback />}>
         <GlassCardMesh
-          videoUrl={item.src}
+          item={item}
+          cardIndex={index}
           isActive={isActive}
           hovered={hovered}
           onClick={handleClick}
@@ -651,42 +764,49 @@ export default function CircularRingHero() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      {/* Top Hero Instruction Pill */}
-      <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center px-4 w-full max-w-lg">
-        <span className="inline-flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-wider uppercase px-4 py-1.5 rounded-full bg-[#F9F6F0]/90 dark:bg-[#141316]/90 backdrop-blur-md border border-[#141316]/20 dark:border-[#F9F6F0]/25 text-[var(--text-primary)] font-bold shadow-[2px_2px_0px_0px_#141316]">
-          <span className="w-2 h-2 rounded-full bg-[#FF425E]" />
-          {SITE_COPY.heroHint}
+      {/* Top Studio Positioning Header (Requirement 3) */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none w-full max-w-3xl px-4">
+        <span className="inline-block font-mono text-[11px] uppercase tracking-widest px-3.5 py-1 rounded-full border border-current/15 bg-[var(--bg-surface)]/70 backdrop-blur-sm text-[var(--text-primary)]">
+          SCROLL UP/DOWN TO SPIN RING · CLICK ANY CARD TO FOCUS
         </span>
+        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-[var(--text-primary)] mt-2">
+          Human-Drawn Character Art &amp; Viral Ads for AI Worlds.
+        </h1>
+        <p className="font-mono text-xs text-[var(--text-muted)] mt-1">
+          100% Human Illustrators · Character IP Sheets · 9:16 Motion Ads
+        </p>
       </div>
 
-      <Canvas
-        camera={{
-          position: [0, isMobile ? 0.6 : 0.35, isMobile ? 11.5 : 9.6],
-          fov: isMobile ? 38 : 32,
-        }}
-        dpr={[1, 1.5]}
-      >
-        <ambientLight intensity={1.3} />
-        <directionalLight position={[4, 8, 6]} intensity={1.1} />
-        <directionalLight position={[-4, 4, -4]} intensity={0.4} color="#F9F6F0" />
-        <CameraRig isMobile={isMobile} />
-        <RingStage
-          activeIndex={activeIndex}
-          onSelect={handleSelect}
-          scrollRotationRef={scrollRotationRef}
-          onFrontChange={(idx) => setActiveIndex(idx)}
-          isMobile={isMobile}
-        />
-        {/* Subtle, soft warm floor shadow */}
-        <ContactShadows
-          position={[0, -1.02, 0]}
-          opacity={0.16}
-          scale={14}
-          blur={2.8}
-          far={4.5}
-          color="#8C7A6B"
-        />
-      </Canvas>
+      <WebGLErrorBoundary>
+        <Canvas
+          camera={{
+            position: [0, isMobile ? 0.6 : 0.35, isMobile ? 11.5 : 9.6],
+            fov: isMobile ? 38 : 32,
+          }}
+          dpr={[1, 1.5]}
+        >
+          <ambientLight intensity={1.3} />
+          <directionalLight position={[4, 8, 6]} intensity={1.1} />
+          <directionalLight position={[-4, 4, -4]} intensity={0.4} color="#F9F6F0" />
+          <CameraRig isMobile={isMobile} />
+          <RingStage
+            activeIndex={activeIndex}
+            onSelect={handleSelect}
+            scrollRotationRef={scrollRotationRef}
+            onFrontChange={(idx) => setActiveIndex(idx)}
+            isMobile={isMobile}
+          />
+          {/* Subtle, soft warm floor shadow */}
+          <ContactShadows
+            position={[0, -1.02, 0]}
+            opacity={0.16}
+            scale={14}
+            blur={2.8}
+            far={4.5}
+            color="#8C7A6B"
+          />
+        </Canvas>
+      </WebGLErrorBoundary>
 
       {/* Clean absolute bottom-left caption box inside Hero section */}
       {activeItem && (
@@ -736,7 +856,7 @@ export default function CircularRingHero() {
       )}
 
       {/* Bottom Right Interactive Card Navigator anchored absolutely inside Hero */}
-      <div className="absolute bottom-8 right-6 sm:right-10 md:right-16 z-20 flex items-center gap-2 bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#141316]/20 dark:border-[#F9F6F0]/25 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#FF425E] font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
+      <div className="absolute bottom-8 right-16 z-20 flex items-center gap-2 bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#141316]/20 dark:border-[#F9F6F0]/25 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#FF425E] font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
         <button
           type="button"
           onClick={() => handleNavigate('prev')}

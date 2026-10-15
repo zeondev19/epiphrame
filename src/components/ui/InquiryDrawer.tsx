@@ -119,7 +119,7 @@ export function InquiryDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden select-none">
+    <div id="commission-drawer-modal" className="fixed inset-0 z-50 overflow-hidden select-none">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[#141316]/60 backdrop-blur-sm transition-opacity duration-300"

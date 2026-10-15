@@ -3,10 +3,47 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   onOpenInquiry?: () => void;
+}
+
+export function SmilingFlowerIcon({ className = 'w-6 h-6' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      width="24"
+      height="24"
+      style={{ width: 24, height: 24, minWidth: 24, minHeight: 24 }}
+      className={`${className} flex-shrink-0`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      {/* 6 Petals radially positioned at 60 deg increments */}
+      <circle cx="22" cy="16" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+      <circle cx="19" cy="21.2" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+      <circle cx="13" cy="21.2" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+      <circle cx="10" cy="16" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+      <circle cx="13" cy="10.8" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+      <circle cx="19" cy="10.8" r="4.5" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+
+      {/* Flower Center Disc */}
+      <circle cx="16" cy="16" r="6.2" fill="#FFD400" stroke="#211529" strokeWidth="1.6" />
+
+      {/* Smiling Face */}
+      <circle cx="14" cy="14.8" r="1.1" fill="#211529" />
+      <circle cx="18" cy="14.8" r="1.1" fill="#211529" />
+      <path
+        d="M 13.6 17.6 Q 16 20.2 18.4 17.6"
+        stroke="#211529"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  );
 }
 
 export function Navbar({ onOpenInquiry }: NavbarProps) {
@@ -14,25 +51,20 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
   const isArtists = pathname === '/artists';
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // Check initial system or local theme
     const savedTheme = localStorage.getItem('epiphrame-theme') as 'light' | 'dark' | null;
     if (savedTheme) {
       setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark');
       document.documentElement.setAttribute('data-theme', 'dark');
     }
-
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const toggleTheme = () => {
@@ -46,138 +78,183 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
     }
   };
 
+  const handleScrollTo = (targetId: string) => {
+    setMobileMenuOpen(false);
+    if (pathname === '/') {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleCommissionClick = (e: React.MouseEvent) => {
+    setMobileMenuOpen(false);
+    if (onOpenInquiry) {
+      onOpenInquiry();
+    } else {
+      const el = document.getElementById('commission-drawer');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled || isArtists
-          ? 'bg-[#F9F6F0]/95 dark:bg-[#141316]/95 backdrop-blur-md border-b border-[#141316]/12 dark:border-[#F9F6F0]/15 shadow-sm'
-          : 'bg-transparent border-b border-transparent'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
-        {/* Brand */}
-        <Link
-          href="/"
-          className="group flex items-center gap-2 select-none"
-        >
-          <span className="font-black text-xl md:text-2xl tracking-tighter text-[var(--text-primary)] transition-transform group-hover:scale-105">
-            EPIPHRAME
-          </span>
-          <span className="w-2.5 h-2.5 rounded-full bg-[#FF425E] group-hover:bg-[#F3A72E] transition-colors shadow-sm" />
-        </Link>
-
-        {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 font-mono text-xs font-bold tracking-wider text-[var(--text-primary)]">
-          <Link
-            href="/#campaigns"
-            className="hover:text-[#FF425E] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#FF425E] hover:after:w-full after:transition-all"
-          >
-            WORKS
-          </Link>
-          <Link
-            href="/artists"
-            className={`transition-colors relative py-1 ${
-              isArtists
-                ? 'text-[#FF425E] font-black after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#FF425E]'
-                : 'hover:text-[#FF425E] after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#FF425E] hover:after:w-full after:transition-all'
-            }`}
-          >
-            ARTISTS
-          </Link>
-          <Link
-            href="/#campaigns"
-            className="hover:text-[#FF425E] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#FF425E] hover:after:w-full after:transition-all"
-          >
-            CAMPAIGNS
-          </Link>
-
-          <button
-            type="button"
-            onClick={onOpenInquiry}
-            className="px-5 py-2.5 rounded-full border border-[#141316] bg-[#FF425E] text-white font-extrabold shadow-[2px_2px_0px_0px_#141316] hover:bg-[#E8334E] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1.5"
-          >
-            <span>LET&apos;S TALK</span>
-            <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
-
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2.5 rounded-full border border-[#141316]/20 bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[#F3A72E]/15 transition-colors active:scale-90 shadow-sm"
-            aria-label="Toggle theme"
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-          >
-            {theme === 'light' ? (
-              <Moon className="w-4 h-4 text-[#141316]" />
-            ) : (
-              <Sun className="w-4 h-4 text-[#F9F6F0]" />
-            )}
-          </button>
-        </nav>
-
-        {/* Mobile controls */}
-        <div className="flex items-center gap-3 md:hidden">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-card)] text-[var(--text-primary)]"
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? (
-              <Moon className="w-4 h-4" />
-            ) : (
-              <Sun className="w-4 h-4 text-[#F3A72E]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-card)] text-[var(--text-primary)]"
-            aria-label="Toggle mobile menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+    <header className="sticky top-0 left-0 right-0 h-16 px-6 md:px-12 backdrop-blur-md bg-[var(--bg-surface)]/85 border-b border-[var(--border-hairline)] z-50 flex items-center justify-between transition-colors">
+      {/* a) Left Brand Logo */}
+      <Link
+        href="/"
+        className="group flex items-center gap-2 select-none"
+        aria-label="Epiphrame Home"
+      >
+        <span className="font-extrabold tracking-tight text-lg text-[var(--text-primary)]">
+          EPIPHRAME
+        </span>
+        <div className="group-hover:rotate-180 transition-transform duration-500 w-6 h-6 flex-shrink-0">
+          <SmilingFlowerIcon className="w-6 h-6" />
         </div>
+      </Link>
+
+      {/* b) Center Industry Navigation Links (Desktop) */}
+      <nav
+        className="hidden md:flex items-center gap-8 font-mono text-xs font-bold tracking-wider text-[var(--text-primary)]"
+        aria-label="Primary Navigation"
+      >
+        <Link
+          href={isArtists ? '/#showcase' : '#showcase'}
+          onClick={() => handleScrollTo('showcase')}
+          className="hover:text-[#FF425E] dark:hover:text-[#FFD400] transition-colors relative py-1"
+        >
+          SHOWCASE
+        </Link>
+        <Link
+          href={isArtists ? '/#character-lab' : '#character-lab'}
+          onClick={() => handleScrollTo('character-lab')}
+          className="hover:text-[#FF425E] dark:hover:text-[#FFD400] transition-colors relative py-1 inline-flex items-center"
+        >
+          <span>CHARACTER LAB</span>
+          <span className="bg-[#FF66B2] text-white text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ml-1.5 leading-none shadow-sm">
+            NEW
+          </span>
+        </Link>
+        <Link
+          href={isArtists ? '/#process' : '#process'}
+          onClick={() => handleScrollTo('process')}
+          className="hover:text-[#FF425E] dark:hover:text-[#FFD400] transition-colors relative py-1"
+        >
+          PROCESS
+        </Link>
+        <Link
+          href="/artists"
+          className={`transition-colors relative py-1 ${
+            isArtists
+              ? 'text-[#FF425E] dark:text-[#FFD400] font-black'
+              : 'hover:text-[#FF425E] dark:hover:text-[#FFD400]'
+          }`}
+        >
+          THE ARTISTS
+        </Link>
+      </nav>
+
+      {/* c) Right Utility & CTA Cluster */}
+      <div className="hidden md:flex items-center gap-3">
+        {/* Theme Switcher Button */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-2 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-[#211529] dark:hover:border-[#FFD400] transition-all active:scale-95 shadow-sm"
+          aria-label={`Switch to ${theme === 'light' ? 'Dark Disco #211529' : 'Warm Cream #F6EDE4'} mode`}
+          title={`Switch to ${theme === 'light' ? 'Dark Disco' : 'Warm Cream'} mode`}
+        >
+          {theme === 'light' ? (
+            <Moon className="w-4 h-4 text-[#211529]" />
+          ) : (
+            <Sun className="w-4 h-4 text-[#FFD400]" />
+          )}
+        </button>
+
+        {/* Primary CTA Button */}
+        <a
+          href="#commission-drawer"
+          onClick={handleCommissionClick}
+          className="px-4 py-2 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#FFD400] dark:text-[#211529] font-mono text-xs font-bold tracking-wider hover:scale-105 transition-all inline-flex items-center gap-1 shadow-sm"
+        >
+          <span>COMMISSION US</span>
+          <span>↗</span>
+        </a>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile Controls */}
+      <div className="flex items-center gap-2 md:hidden">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-2 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-card)] text-[var(--text-primary)]"
+          aria-label="Toggle theme"
+        >
+          {theme === 'light' ? (
+            <Moon className="w-4 h-4 text-[#211529]" />
+          ) : (
+            <Sun className="w-4 h-4 text-[#FFD400]" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-card)] text-[var(--text-primary)]"
+          aria-label="Toggle mobile menu"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[var(--bg-card)] border-b border-[#141316]/20 px-6 py-6 space-y-4 font-mono text-sm shadow-xl">
+        <div className="absolute top-16 left-0 right-0 bg-[var(--bg-surface)] border-b border-[var(--border-hairline)] px-6 py-6 space-y-4 font-mono text-sm shadow-xl md:hidden">
           <Link
-            href="/#campaigns"
-            onClick={() => setMobileMenuOpen(false)}
+            href={isArtists ? '/#showcase' : '#showcase'}
+            onClick={() => handleScrollTo('showcase')}
             className="block py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
           >
-            WORKS
+            SHOWCASE
+          </Link>
+          <Link
+            href={isArtists ? '/#character-lab' : '#character-lab'}
+            onClick={() => handleScrollTo('character-lab')}
+            className="flex items-center py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
+          >
+            <span>CHARACTER LAB</span>
+            <span className="bg-[#FF66B2] text-white text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ml-2 leading-none">
+              NEW
+            </span>
+          </Link>
+          <Link
+            href={isArtists ? '/#process' : '#process'}
+            onClick={() => handleScrollTo('process')}
+            className="block py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
+          >
+            PROCESS
           </Link>
           <Link
             href="/artists"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
           >
-            ARTISTS
+            THE ARTISTS
           </Link>
-          <Link
-            href="/#campaigns"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[var(--text-primary)] font-bold hover:text-[#FF425E]"
+          <a
+            href="#commission-drawer"
+            onClick={handleCommissionClick}
+            className="w-full mt-3 py-3 px-4 rounded-full bg-[#211529] text-[#F6EDE4] dark:bg-[#FFD400] dark:text-[#211529] font-mono text-xs font-bold tracking-wider uppercase text-center block shadow-md"
           >
-            CAMPAIGNS
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenInquiry?.();
-            }}
-            className="w-full mt-2 py-3 px-4 rounded-full bg-[#FF425E] text-white font-black text-xs tracking-wider uppercase border border-[#141316] shadow-[2px_2px_0px_0px_#141316] flex items-center justify-center gap-2"
-          >
-            LET&apos;S TALK <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
+            COMMISSION US ↗
+          </a>
         </div>
       )}
     </header>
   );
 }
+
+export default Navbar;

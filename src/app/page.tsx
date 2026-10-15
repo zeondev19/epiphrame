@@ -6,8 +6,9 @@ import Lenis from 'lenis';
 import { Navbar } from '@/components/layout/Navbar';
 import { InteractiveScrollRuler } from '@/components/ui/InteractiveScrollRuler';
 import { WhyHumanArt } from '@/components/sections/WhyHumanArt';
-import { SelectedCampaigns } from '@/components/sections/SelectedCampaigns';
-import { ArtistRosterTeaser } from '@/components/sections/ArtistRosterTeaser';
+import { DeliverablesShowcase } from '@/components/sections/DeliverablesShowcase';
+import { ArtistCollectiveStrip } from '@/components/sections/ArtistCollectiveStrip';
+import { CommissionArcade } from '@/components/sections/CommissionArcade';
 import { InquiryDrawer } from '@/components/ui/InquiryDrawer';
 import { Footer } from '@/components/layout/Footer';
 
@@ -67,14 +68,17 @@ export default function Home() {
       {/* Hero Section: 3D Multi-Media Circular Ring */}
       <CircularRingHero />
 
-      {/* Section 01: Why Human Art Wins Manifesto */}
+      {/* Section 01: Why Human Art Wins Manifesto (anchors #process & #character-lab) */}
       <WhyHumanArt />
 
-      {/* Section 02: Selected Campaigns (Cycle AI & Hangjam) */}
-      <SelectedCampaigns onOpenInquiry={handleOpenInquiry} />
+      {/* Section 03: Deliverables & Campaign Showcase (anchor #showcase) */}
+      <DeliverablesShowcase />
 
-      {/* Section 03: Artist Roster Teaser */}
-      <ArtistRosterTeaser onOpenInquiry={handleOpenInquiry} />
+      {/* Section 04: The Artist Collective Teaser Strip */}
+      <ArtistCollectiveStrip />
+
+      {/* Section 05: Interactive Commission Brief Arcade (anchor #commission-drawer) */}
+      <CommissionArcade />
 
       {/* Footer */}
       <Footer onOpenInquiry={() => handleOpenInquiry()} />

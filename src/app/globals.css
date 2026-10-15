@@ -5,25 +5,25 @@
 @tailwind utilities;
 
 :root {
-  --bg-surface: #F9F6F0;       /* Manga Archival Paper (tactile warm canvas) */
+  --bg-surface: #F6EDE4;       /* Warm Cream */
   --bg-card: #FFFFFF;          /* Clean Gallery White */
-  --text-primary: #141316;     /* Deep Sumi Ink */
+  --text-primary: #211529;     /* Dark Disco */
   --text-muted: #5A5560;       /* Balanced Sumi Wash */
-  --border-hairline: rgba(20, 19, 22, 0.12);
-  --border-strong: #141316;    /* Sumi Comic Outline */
+  --border-hairline: rgba(33, 21, 41, 0.12);
+  --border-strong: #211529;    /* Dark Disco Comic Outline */
   --accent-pink: #FF425E;      /* Riso Acid Coral (Primary hero interaction) */
-  --accent-yellow: #F3A72E;    /* Warm Marigold (Micro-accent for awards & stars) */
+  --accent-yellow: #FFD400;    /* Vivid Yellow Flower Accent */
   --accent-green: #204A36;     /* Matcha Forest (Client verification) */
-  --accent-charcoal: #141316;  /* Deep Sumi Ink */
+  --accent-charcoal: #211529;  /* Dark Disco */
 }
 
 [data-theme="dark"] {
-  --bg-surface: #141316;       /* Deep Sumi Canvas */
-  --bg-card: #1E1C22;          /* Charcoal Black Card */
-  --text-primary: #F9F6F0;     /* Archival Paper Text */
+  --bg-surface: #211529;       /* Dark Disco Canvas */
+  --bg-card: #1B1222;          /* Deep Disco Card */
+  --text-primary: #F6EDE4;     /* Warm Cream Text */
   --text-muted: #A8A1AF;       /* Muted Silver Violet */
-  --border-hairline: rgba(249, 246, 240, 0.14);
-  --border-strong: #F9F6F0;
+  --border-hairline: rgba(246, 237, 228, 0.14);
+  --border-strong: #F6EDE4;
 }
 
 ::selection {
