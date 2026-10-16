@@ -3,44 +3,34 @@
 import React from 'react';
 import Link from 'next/link';
 import { ARTISTS_ROSTER, ArtistProfile } from '@/data/siteContent';
-import { ArrowUpRight, Award, Sparkles } from 'lucide-react';
 
 export function ArtistCollectiveStrip() {
   return (
     <section
-      id="collective"
-      className="relative w-full py-24 md:py-36 bg-[var(--bg-surface)] border-t border-[var(--border-hairline)] overflow-hidden"
+      id="playground"
+      className="relative w-full py-20 md:py-32 bg-white"
     >
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#141316] text-[#F9F6F0] dark:bg-[#F9F6F0] dark:text-[#141316] font-black border border-[#141316] shadow-[2px_2px_0px_0px_#FF425E]">
-                04 / THE COLLECTIVE : RESIDENT ARTISTS &amp; STYLISTS
-              </span>
-              <span className="font-mono text-xs text-[var(--text-muted)] font-bold tracking-wider hidden sm:inline-block">
-                STUDIO ROSTER
-              </span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[var(--text-primary)] tracking-tight">
-              Resident Illustrators &amp; Motion Designers
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#211529] tracking-tight">
+              Meet the Artists
             </h2>
-            <p className="text-base sm:text-lg text-[var(--text-muted)] mt-2 max-w-2xl">
-              Four resident artists specializing in character model sheets, Live2D rigging, color palettes, and cinematic key visuals.
+            <p className="text-base text-[#5A5560] mt-2 max-w-lg">
+              Four resident illustrators, each with their own style and flower mascot.
             </p>
           </div>
 
           <Link
             href="/artists"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#FF425E] text-white font-mono text-xs font-black tracking-wider hover:bg-[#141316] dark:hover:bg-[#FFD400] dark:hover:text-[#141316] border border-[#141316] shadow-[3px_3px_0px_0px_#141316] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex-shrink-0"
+            className="bg-[#FF66B2] text-white border-2 border-[#211529] shadow-[3px_3px_0px_#211529] rounded-full px-6 py-3 font-bold text-xs uppercase tracking-wider hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all flex-shrink-0"
           >
-            <span>VIEW FULL ARTIST VAULT (/artists)</span>
-            <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+            FULL ARTIST VAULT
           </Link>
         </div>
 
-        {/* 4 Interactive Artist Trading Cards */}
+        {/* Artist Trading Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {ARTISTS_ROSTER.map((artist: ArtistProfile) => {
             const previewSrc =
@@ -49,89 +39,66 @@ export function ArtistCollectiveStrip() {
               '/assets/cards/card-01.webp';
 
             return (
-              <div
+              <Link
                 key={artist.id}
-                className="group flex flex-col justify-between rounded-3xl bg-[var(--bg-card)] border border-[#141316]/20 dark:border-[#F9F6F0]/20 p-6 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#FF425E] hover:shadow-[6px_6px_0px_0px_#FF425E] hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden"
+                href={`/artists#${artist.id}`}
+                className="group flex flex-col rounded-3xl bg-[#F6EDE4] border-2 border-[#211529] p-5 shadow-[4px_4px_0px_#211529] hover:shadow-[6px_6px_0px_#FF66B2] hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
               >
-                <div>
-                  {/* Top Header: Emblem + Color Pip */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center p-2.5 border-2 transition-transform group-hover:scale-110 shadow-sm"
-                      style={{
-                        backgroundColor: `${artist.emblemColor}22`,
-                        borderColor: artist.emblemColor,
-                      }}
-                    >
-                      <img
-                        src={artist.avatarSrc}
-                        alt={`${artist.name} Emblem`}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    <span
-                      className="w-3.5 h-3.5 rounded-full border border-[#141316]"
-                      style={{ backgroundColor: artist.emblemColor }}
-                      title={`Theme: ${artist.emblemColor}`}
-                    />
-                  </div>
-
-                  {/* Name & Role */}
-                  <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight mb-1">
-                    {artist.name}
-                  </h3>
-                  <p
-                    className="font-mono text-xs font-black uppercase tracking-wider mb-2"
-                    style={{ color: artist.emblemColor }}
+                {/* Mascot + Name */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center p-2 border-2 group-hover:scale-110 transition-transform"
+                    style={{
+                      backgroundColor: `${artist.emblemColor}22`,
+                      borderColor: artist.emblemColor,
+                    }}
                   >
-                    {artist.role}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed mb-5">
-                    {artist.specialty}
-                  </p>
-
-                  {/* Tool Stack & Specialties */}
-                  <div className="space-y-1.5 mb-5">
-                    {artist.sombongBadges.map((badge) => (
-                      <div
-                        key={badge}
-                        className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--text-primary)] font-bold bg-[var(--bg-surface)] px-2.5 py-1.5 rounded-xl border border-[var(--border-hairline)] shadow-xs"
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: artist.emblemColor }}
-                        />
-                        <span className="truncate">{badge}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Artwork Thumbnail Preview */}
-                  <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-[#141316]/15 dark:border-[#F9F6F0]/15 mb-5 bg-neutral-900">
                     <img
-                      src={previewSrc}
-                      alt={`${artist.name} Sample Artwork`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      src={artist.avatarSrc}
+                      alt={`${artist.name}'s mascot`}
+                      className="w-full h-full object-contain"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-                    <span className="absolute bottom-2 left-2.5 font-mono text-[10px] text-white font-extrabold px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs">
-                      VAULT PREVIEW
-                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-extrabold text-[#211529] tracking-tight">
+                      {artist.name}
+                    </h3>
+                    <p
+                      className="text-xs font-bold uppercase tracking-wider"
+                      style={{ color: artist.emblemColor }}
+                    >
+                      {artist.role}
+                    </p>
                   </div>
                 </div>
 
-                {/* Direct Link to Artist Vault */}
-                <Link
-                  href={`/artists#${artist.id}`}
-                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[var(--bg-surface)] hover:bg-[#FF425E] hover:text-white border border-[#141316]/20 font-mono text-xs font-black transition-all group/cta"
-                >
-                  <span>EXPLORE {artist.name.toUpperCase()}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 transition-transform" />
-                </Link>
-              </div>
+                <p className="text-xs text-[#5A5560] leading-relaxed mb-4">
+                  {artist.specialty}
+                </p>
+
+                {/* Artwork Preview */}
+                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border-2 border-[#211529] bg-[#211529]">
+                  <img
+                    src={previewSrc}
+                    alt={`${artist.name} artwork`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-1.5 mt-4">
+                  {artist.sombongBadges.slice(0, 2).map((badge) => (
+                    <span
+                      key={badge}
+                      className="text-[10px] font-bold px-2 py-1 rounded-full bg-white border border-[#211529]/20 text-[#211529]"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              </Link>
             );
           })}
         </div>

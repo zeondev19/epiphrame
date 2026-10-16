@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { z } from 'zod';
-import { Send, CheckCircle2, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle2, RefreshCw, AlertCircle } from 'lucide-react';
 
 const DELIVERABLE_OPTIONS = [
   '9:16 TikTok/Reels Video Ad',
@@ -115,25 +115,22 @@ export function CommissionArcade() {
 
   return (
     <section
-      id="commission-drawer"
-      className="relative w-full py-24 md:py-36 bg-[var(--bg-surface)] border-t border-[var(--border-hairline)]"
+      id="contact"
+      className="relative w-full py-20 md:py-32 bg-[#F6EDE4]"
     >
       <div className="max-w-4xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-14">
-          <span className="inline-block font-mono text-xs uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#FFD400] text-[#211529] font-black border border-[#141316] shadow-[2px_2px_0px_0px_#141316] mb-3">
-            05 / PROJECT INQUIRY
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black text-[var(--text-primary)] tracking-tight">
-            Ready to frame your next character campaign?
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-[#211529] tracking-tight">
+            Say Hi! ✿
           </h2>
-          <p className="text-base sm:text-lg text-[var(--text-muted)] mt-3 max-w-xl mx-auto">
-            Submit your project scope below. Direct collaboration with resident artists, transparent milestones, and a 48-hour proposal turnaround.
+          <p className="text-base text-[#5A5560] mt-3 max-w-xl mx-auto">
+            Tell us about your project. We&apos;ll get back with a proposal within 48 hours.
           </p>
         </div>
 
         {/* Card Form Wrapper */}
-        <div className="rounded-3xl bg-[var(--bg-card)] border-2 border-[#141316] dark:border-[#F9F6F0]/30 p-8 sm:p-12 shadow-[6px_6px_0px_0px_#141316] dark:shadow-[6px_6px_0px_0px_#FFD400] relative">
+        <div className="rounded-3xl bg-white border-2 border-[#211529] p-8 sm:p-12 shadow-[6px_6px_0px_#211529] relative">
           {isSuccess ? (
             /* Success Confirmation State */
             <div className="py-12 text-center flex flex-col items-center">

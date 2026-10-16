@@ -4,22 +4,19 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Lenis from 'lenis';
 import { Navbar } from '@/components/layout/Navbar';
-import { InteractiveScrollRuler } from '@/components/ui/InteractiveScrollRuler';
-import { WhyHumanArt } from '@/components/sections/WhyHumanArt';
 import { DeliverablesShowcase } from '@/components/sections/DeliverablesShowcase';
 import { ArtistCollectiveStrip } from '@/components/sections/ArtistCollectiveStrip';
 import { CommissionArcade } from '@/components/sections/CommissionArcade';
 import { InquiryDrawer } from '@/components/ui/InquiryDrawer';
 import { Footer } from '@/components/layout/Footer';
 
-// Mandatory dynamic client-only import for Three.js canvas (PRD §7.1)
 const CircularRingHero = dynamic(
   () => import('@/components/canvas/CircularRingHero'),
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-screen bg-[#F9F6F0] flex items-center justify-center font-mono text-xs tracking-widest text-[#141316] font-bold">
-        LOADING EPIPHRAME 3D RING...
+      <div className="w-full h-screen bg-gradient-to-b from-[#1388E5] via-[#80B0E8] to-[#F6EDE4] flex items-center justify-center font-bold text-xl text-[#FFD400] drop-shadow-[0_3px_0_#211529]">
+        epiphrame
       </div>
     ),
   }
@@ -30,7 +27,6 @@ export default function Home() {
   const [inquiryProjectType, setInquiryProjectType] = useState<string>('video-ad-campaign');
   const [inquiryArtistId, setInquiryArtistId] = useState<string>('any');
 
-  // Initialize Lenis smooth inertial scrolling (PRD §2)
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.1,
@@ -59,31 +55,24 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[var(--bg-surface)] text-[var(--text-primary)] relative">
-      {/* Top Navigation */}
+      {/* Playful transparent navbar overlaying the sky */}
       <Navbar onOpenInquiry={() => handleOpenInquiry()} />
 
-      {/* Right Edge Interactive 40-Tick Scroll Ruler */}
-      <InteractiveScrollRuler />
-
-      {/* Hero Section: 3D Multi-Media Circular Ring */}
+      {/* Hero Section: Sky World + 3D Ring */}
       <CircularRingHero />
 
-      {/* Section 01: Why Human Art Wins Manifesto (anchors #process & #character-lab) */}
-      <WhyHumanArt />
-
-      {/* Section 03: Deliverables & Campaign Showcase (anchor #showcase) */}
+      {/* Our Drawings Showcase */}
       <DeliverablesShowcase />
 
-      {/* Section 04: The Artist Collective Teaser Strip */}
+      {/* Meet The Artists */}
       <ArtistCollectiveStrip />
 
-      {/* Section 05: Interactive Commission Brief Arcade (anchor #commission-drawer) */}
+      {/* Say Hi - Commission Form */}
       <CommissionArcade />
 
       {/* Footer */}
       <Footer onOpenInquiry={() => handleOpenInquiry()} />
 
-      {/* Slide-in Zod-validated Inquiry Drawer */}
       <InquiryDrawer
         isOpen={inquiryOpen}
         onClose={() => setInquiryOpen(false)}

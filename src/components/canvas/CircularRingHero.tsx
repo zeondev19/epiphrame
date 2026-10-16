@@ -8,11 +8,12 @@ import * as THREE from 'three';
 import { RING_SHOWCASE_ITEMS, RingShowcaseItem, SITE_COPY } from '@/data/siteContent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { WebGLErrorBoundary } from '@/components/canvas/WebGLErrorBoundary';
+import { motion } from 'framer-motion';
 
 function CardFallback() {
   return (
     <mesh>
-      <planeGeometry args={[1.22, 2.16, 24, 24]} />
+      <planeGeometry args={[0.98, 1.74, 24, 24]} />
       <meshBasicMaterial color="#1f1627" transparent opacity={0.6} />
     </mesh>
   );
@@ -23,6 +24,7 @@ function GlassCardMeshInner({
   cardIndex,
   isActive,
   hovered,
+  glitterEnabled = false,
   onClick,
   onPointerOver,
   onPointerOut,
@@ -31,14 +33,15 @@ function GlassCardMeshInner({
   cardIndex: number;
   isActive: boolean;
   hovered: boolean;
+  glitterEnabled?: boolean;
   onClick: (e: any) => void;
   onPointerOver: (e: any) => void;
   onPointerOut: (e: any) => void;
 }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const cardWidth = 1.22;
-  const cardHeight = 2.16;
-  const cardAspect = cardWidth / cardHeight; // ~0.5648
+  const cardWidth = 0.98;
+  const cardHeight = 1.74;
+  const cardAspect = cardWidth / cardHeight; // ~0.5632
   const videoAspect = 576.0 / 1024.0; // exact 9:16 = 0.5625
 
   const shaderArgs = useMemo(() => {
@@ -51,6 +54,7 @@ function GlassCardMeshInner({
         uAspect: { value: cardAspect },
         uTexAspect: { value: videoAspect },
         uCardIndex: { value: Number(cardIndex) },
+        uGlitter: { value: glitterEnabled ? 1.0 : 0.0 },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -81,6 +85,7 @@ function GlassCardMeshInner({
         uniform float uAspect;
         uniform float uTexAspect;
         uniform float uCardIndex;
+        uniform float uGlitter;
 
         varying vec2 vUv;
         varying vec3 vWorldPos;
@@ -90,14 +95,6 @@ function GlassCardMeshInner({
         float sdRoundedBox(vec2 p, vec2 b, float r) {
           vec2 q = abs(p) - b + vec2(r);
           return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
-        }
-
-        vec2 getSDFNormal(vec2 p, vec2 b, float r) {
-          float eps = 0.001;
-          float d = sdRoundedBox(p, b, r);
-          float dx = sdRoundedBox(p + vec2(eps, 0.0), b, r) - d;
-          float dy = sdRoundedBox(p + vec2(0.0, eps), b, r) - d;
-          return normalize(vec2(dx, dy));
         }
 
         void main() {
@@ -127,94 +124,71 @@ function GlassCardMeshInner({
           }
 
           vec4 texColor = texture2D(map, texUv);
-          vec3 col = texColor.rgb;
+          vec3 artCol = texColor.rgb;
 
-          // 3. Layer A - Iridescent Prismatic Foil Sweep (Subtle & clean)
-          float diagAngle = (vUv.x * 0.65 + vUv.y * 0.85) + dot(N.xy, uMouse * 0.35) + (1.0 - ndv) * 0.5 + uCardIndex * 0.4;
-          vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (diagAngle * 2.2 + uTime * 0.15 + vec3(0.0, 0.33, 0.67)));
-          float holoWave = sin(diagAngle * 9.0 + uTime * 0.9) * 0.5 + 0.5;
-          float holoMask = (0.35 + 0.65 * holoWave) * (0.30 + 0.70 * pow(1.0 - ndv, 1.8));
-          col += rainbow * holoMask * (0.16 + 0.10 * uActive);
+          // 3. Prismatic Holographic Diffraction Rainbow Spectrum & Light Sweep
+          float foilAngle = (vUv.x * 0.70 + vUv.y * 1.05) + dot(N.xy, uMouse * 0.35) + (1.0 - ndv) * 0.55 + uCardIndex * 0.42;
+          vec3 rainbowFoil = 0.5 + 0.5 * cos(6.28318 * (foilAngle * 2.6 + uTime * 0.18 + vec3(0.0, 0.33, 0.67)));
 
-          // 4. Layer B - 4-Point Star Glints & Moving Light Sweep (STRICTLY CORNERS ONLY)
-          // Top-left and bottom-right corners only - Center is 100% UNTOUCHED
-          float distTL = length(vUv - vec2(0.12, 0.88));
-          float distBR = length(vUv - vec2(0.88, 0.12));
-          float cornerMask = smoothstep(0.44, 0.04, distTL) * 1.25 + smoothstep(0.44, 0.04, distBR) * 1.05;
+          // Diagonal light beam flash across the card
+          float sweepPhase = (vUv.x * 0.85 + vUv.y * 1.15) * 3.14159 - uTime * 2.2 + uMouse.x * 1.3 + uCardIndex * 0.9;
+          float sweepBeam = pow(max(0.0, sin(sweepPhase)), 16.0) * 1.4;
 
-          // Dynamic light sweep / flash across the diagonal corners ("kilatan")
-          float sweepPhase = (vUv.x + vUv.y * 1.1) * 3.14159 - uTime * 2.2 + uMouse.x * 1.4 + uCardIndex * 1.1;
-          float sweepFlash = pow(max(0.0, sin(sweepPhase)), 22.0) * 2.2;
-          float cornerFlash = sweepFlash * cornerMask;
+          // Four-point anime / comic starburst glints
+          float d1 = length((vUv - vec2(0.24, 0.78)) * vec2(uAspect, 1.0));
+          vec2 dP1 = abs(vUv - vec2(0.24, 0.78));
+          float star1 = (max(0.0, 1.0 - dP1.x * 35.0) * max(0.0, 1.0 - dP1.y * 5.0)
+                       + max(0.0, 1.0 - dP1.y * 35.0) * max(0.0, 1.0 - dP1.x * 5.0)
+                       + max(0.0, 1.0 - d1 * 22.0) * 1.5) * pow(max(0.0, sin(uTime * 3.2 + uCardIndex * 1.7)), 12.0);
 
-          // Procedural 4-point star glints in corners
-          vec2 starGrid = floor(vUv * vec2(14.0, 19.0));
-          vec2 starUv = fract(vUv * vec2(14.0, 19.0)) - 0.5;
-          float starRnd1 = fract(sin(dot(starGrid + uCardIndex * 7.0, vec2(127.1, 311.7))) * 43758.5453);
-          float starRnd2 = fract(sin(dot(starGrid + uCardIndex * 13.0, vec2(269.5, 183.3))) * 43758.5453);
+          float d2 = length((vUv - vec2(0.76, 0.24)) * vec2(uAspect, 1.0));
+          vec2 dP2 = abs(vUv - vec2(0.76, 0.24));
+          float star2 = (max(0.0, 1.0 - dP2.x * 35.0) * max(0.0, 1.0 - dP2.y * 5.0)
+                       + max(0.0, 1.0 - dP2.y * 35.0) * max(0.0, 1.0 - dP2.x * 5.0)
+                       + max(0.0, 1.0 - d2 * 22.0) * 1.5) * pow(max(0.0, sin(uTime * 3.0 + 1.8 + uCardIndex * 2.3)), 12.0);
 
-          vec2 starCenter = (vec2(starRnd1, starRnd2) - 0.5) * 0.42;
-          vec2 starDelta = starUv - starCenter;
-          vec2 starAbs = abs(starDelta);
+          float d3 = length((vUv - vec2(0.72, 0.68)) * vec2(uAspect, 1.0));
+          vec2 dP3 = abs(vUv - vec2(0.72, 0.68));
+          float star3 = (max(0.0, 1.0 - dP3.x * 38.0) * max(0.0, 1.0 - dP3.y * 5.2)
+                       + max(0.0, 1.0 - dP3.y * 38.0) * max(0.0, 1.0 - dP3.x * 5.2)
+                       + max(0.0, 1.0 - d3 * 24.0) * 1.5) * pow(max(0.0, sin(uTime * 2.8 + 3.4 + uCardIndex * 0.9)), 12.0);
 
-          // Sharp 4-point star cross-rays
-          float rayH = max(0.0, 1.0 - starAbs.x * 24.0) * max(0.0, 1.0 - starAbs.y * 3.2);
-          float rayV = max(0.0, 1.0 - starAbs.y * 24.0) * max(0.0, 1.0 - starAbs.x * 3.2);
-          float starCore = max(0.0, 1.0 - length(starDelta) * 12.0);
-          float starShape = starCore * 1.4 + pow(rayH + rayV, 2.0) * 2.8;
+          float allStars = (star1 + star2 + star3);
+          vec3 starColor = vec3(1.0, 0.98, 0.72) + rainbowFoil * 0.35;
 
-          float starTwinkle = pow(max(0.0, sin(starRnd1 * 6.28318 + uTime * 2.8 + diagAngle * 5.0)), 16.0);
-          float gridStars = starShape * starTwinkle * cornerMask;
+          // Holographic foil applied to the artwork
+          vec3 holoArt = artCol + (rainbowFoil * 0.38 + vec3(sweepBeam * 0.40)) * (0.40 + 0.35 * uActive) + starColor * allStars * 0.95;
+          vec3 finalArt = mix(artCol, holoArt, uGlitter);
 
-          // Hero moving star glints at Top-Left & Bottom-Right tips
-          vec2 heroTLPos = vec2(0.13, 0.87) + vec2(sin(uTime * 1.2 + uCardIndex), cos(uTime * 1.5 + uCardIndex)) * 0.025;
-          vec2 dHeroTL = abs(vUv - heroTLPos);
-          float heroRayTL = max(0.0, 1.0 - dHeroTL.x * 28.0) * max(0.0, 1.0 - dHeroTL.y * 3.5)
-                          + max(0.0, 1.0 - dHeroTL.y * 28.0) * max(0.0, 1.0 - dHeroTL.x * 3.5);
-          float heroCoreTL = max(0.0, 1.0 - length(dHeroTL) * 14.0);
-          float heroStarTL = (heroCoreTL * 1.6 + pow(heroRayTL, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + uCardIndex)), 10.0);
+          // 4. Card Frame Bezel (Solid Comic Paper vs. Gleaming Rainbow Chrome Foil)
+          float outerStroke = smoothstep(-0.016, -0.002, dist);
+          float frameBezel = smoothstep(-0.048, -0.036, dist);
+          float innerHairline = smoothstep(-0.052, -0.046, dist) - smoothstep(-0.046, -0.040, dist);
 
-          vec2 heroBRPos = vec2(0.87, 0.13) + vec2(cos(uTime * 1.1 + uCardIndex), sin(uTime * 1.4 + uCardIndex)) * 0.025;
-          vec2 dHeroBR = abs(vUv - heroBRPos);
-          float heroRayBR = max(0.0, 1.0 - dHeroBR.x * 28.0) * max(0.0, 1.0 - dHeroBR.y * 3.5)
-                          + max(0.0, 1.0 - dHeroBR.y * 28.0) * max(0.0, 1.0 - dHeroBR.x * 3.5);
-          float heroCoreBR = max(0.0, 1.0 - length(dHeroBR) * 14.0);
-          float heroStarBR = (heroCoreBR * 1.6 + pow(heroRayBR, 2.0) * 3.2) * pow(max(0.0, sin(uTime * 2.4 + 1.8 + uCardIndex)), 10.0);
+          vec3 darkInk = vec3(0.129, 0.082, 0.161); // #211529 Comic ink
+          vec3 paperWhite = vec3(1.0, 1.0, 1.0);
+          vec3 activeAccent = vec3(1.0, 0.83, 0.0); // #FFD400 Sunny Yellow
 
-          vec3 starColor = mix(vec3(1.0, 0.95, 0.4), vec3(1.0, 0.20, 0.60), 0.35);
-          float starTotal = gridStars * 2.0 + (heroStarTL + heroStarBR) * 1.8 + cornerFlash * 0.8;
-          col += starColor * starTotal * (0.65 + 0.45 * uActive);
+          // Matte Paper Frame for Clean Comic mode
+          vec3 matteFrame = mix(paperWhite, activeAccent, uActive * 0.90);
 
-          // 5. GlassAiButton LUMINOUS NEON BORDER (Tokyo Risograph: Riso Coral #FF425E, Warm Marigold #F3A72E & Matcha Forest)
-          float outerStroke = smoothstep(-0.018, -0.002, dist);
-          float innerGlow = exp(-pow(max(0.0, -dist - 0.015) / 0.040, 2.0));
+          // Gleaming Iridescent Rainbow Chrome Foil Frame for Holo Foil mode
+          vec3 chromeBase = mix(vec3(0.96, 0.97, 1.0), vec3(1.0, 0.88, 0.28), uActive * 0.88);
+          vec3 holoFrame = mix(chromeBase, rainbowFoil * 1.25, 0.52) + vec3(sweepBeam * 0.70) + starColor * allStars * 0.60;
 
-          // Angle of border point and tracking of cursor
-          float borderAngle = atan(p.y, p.x);
-          float mouseAngle = atan(uMouse.y, uMouse.x);
-          float cursorTracking = 0.5 + 0.5 * cos(borderAngle - mouseAngle);
+          // Seamless transition between matte comic frame and holographic chrome foil
+          vec3 finalFrame = mix(matteFrame, holoFrame, uGlitter);
 
-          vec3 risoCoral = vec3(1.0, 0.26, 0.37);      // #FF425E (Riso Acid Coral)
-          vec3 warmMarigold = vec3(0.95, 0.65, 0.18);  // #F3A72E (Warm Marigold)
-          vec3 matchaForest = vec3(0.13, 0.29, 0.21);  // #204A36 (Matcha Forest)
+          // 5. Composite Final Pixel Color
+          vec3 col = finalArt;
+          col = mix(col, finalFrame, frameBezel);
 
-          vec3 strokeGradient = mix(risoCoral, warmMarigold, sin(borderAngle * 2.2 + uTime * 1.0) * 0.5 + 0.5);
-          strokeGradient = mix(strokeGradient, matchaForest, cursorTracking * 0.40);
+          // Inner hairline groove between art and frame (shifts to subtle iridescent ink in holo mode)
+          vec3 hairlineColor = mix(darkInk, rainbowFoil * 0.7, uGlitter * 0.45);
+          col = mix(col, hairlineColor, innerHairline * 0.70);
 
-          float luminousRim = (outerStroke * 1.4 + innerGlow * 0.5) * (0.85 + 0.6 * cursorTracking + 0.4 * uActive);
-
-          // Translucent glass bezel frame tint (Manga Archival Paper / Riso Coral)
-          float frameMask = smoothstep(-0.040, -0.032, dist);
-          vec3 glassTint = mix(vec3(0.976, 0.965, 0.941), strokeGradient, 0.22);
-          col = mix(col, mix(col, glassTint, 0.20), frameMask);
-
-          // Apply calibrated rim stroke & grazing Fresnel sheen
-          col += strokeGradient * luminousRim;
-          col += vec3(1.0) * grazing * 0.30 * (0.8 + 0.4 * uActive);
-
-          // Subtle diagonal glass reflection
-          float diagonalSheen = 0.04 * pow(max(0.0, 1.0 - abs((vUv.x + vUv.y) - 1.05) * 4.0), 3.0);
-          col += vec3(diagonalSheen);
+          // Outer dark comic contour
+          col = mix(col, darkInk, outerStroke * 0.98);
 
           gl_FragColor = vec4(col, alpha);
         }
@@ -222,7 +196,9 @@ function GlassCardMeshInner({
       transparent: true,
       side: THREE.DoubleSide,
       depthWrite: true,
+      depthTest: true,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [texture, cardAspect, videoAspect, cardIndex]);
 
   useFrame(({ clock, pointer }, delta) => {
@@ -236,6 +212,12 @@ function GlassCardMeshInner({
       8,
       delta
     );
+    materialRef.current.uniforms.uGlitter.value = THREE.MathUtils.damp(
+      materialRef.current.uniforms.uGlitter.value,
+      glitterEnabled ? 1.0 : 0.0,
+      12,
+      delta
+    );
   });
 
   return (
@@ -243,9 +225,16 @@ function GlassCardMeshInner({
       onClick={onClick}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
+      renderOrder={5}
     >
       <planeGeometry args={[cardWidth, cardHeight, 32, 32]} />
-      <shaderMaterial ref={materialRef} attach="material" {...shaderArgs} />
+      <shaderMaterial
+        ref={materialRef}
+        attach="material"
+        {...shaderArgs}
+        depthWrite={true}
+        depthTest={true}
+      />
     </mesh>
   );
 }
@@ -255,6 +244,7 @@ function ImageCardMesh({
   cardIndex,
   isActive,
   hovered,
+  glitterEnabled = false,
   onClick,
   onPointerOver,
   onPointerOut,
@@ -263,6 +253,7 @@ function ImageCardMesh({
   cardIndex: number;
   isActive: boolean;
   hovered: boolean;
+  glitterEnabled?: boolean;
   onClick: (e: any) => void;
   onPointerOver: (e: any) => void;
   onPointerOut: (e: any) => void;
@@ -276,6 +267,7 @@ function ImageCardMesh({
       cardIndex={cardIndex}
       isActive={isActive}
       hovered={hovered}
+      glitterEnabled={glitterEnabled}
       onClick={onClick}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
@@ -288,6 +280,7 @@ function VideoCardMesh({
   cardIndex,
   isActive,
   hovered,
+  glitterEnabled = false,
   onClick,
   onPointerOver,
   onPointerOut,
@@ -296,6 +289,7 @@ function VideoCardMesh({
   cardIndex: number;
   isActive: boolean;
   hovered: boolean;
+  glitterEnabled?: boolean;
   onClick: (e: any) => void;
   onPointerOver: (e: any) => void;
   onPointerOut: (e: any) => void;
@@ -316,6 +310,7 @@ function VideoCardMesh({
       cardIndex={cardIndex}
       isActive={isActive}
       hovered={hovered}
+      glitterEnabled={glitterEnabled}
       onClick={onClick}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
@@ -328,6 +323,7 @@ function GlassCardMesh({
   cardIndex,
   isActive,
   hovered,
+  glitterEnabled = false,
   onClick,
   onPointerOver,
   onPointerOut,
@@ -336,6 +332,7 @@ function GlassCardMesh({
   cardIndex: number;
   isActive: boolean;
   hovered: boolean;
+  glitterEnabled?: boolean;
   onClick: (e: any) => void;
   onPointerOver: (e: any) => void;
   onPointerOut: (e: any) => void;
@@ -348,6 +345,7 @@ function GlassCardMesh({
         cardIndex={cardIndex}
         isActive={isActive}
         hovered={hovered}
+        glitterEnabled={glitterEnabled}
         onClick={onClick}
         onPointerOver={onPointerOver}
         onPointerOut={onPointerOut}
@@ -360,6 +358,7 @@ function GlassCardMesh({
       cardIndex={cardIndex}
       isActive={isActive}
       hovered={hovered}
+      glitterEnabled={glitterEnabled}
       onClick={onClick}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
@@ -369,7 +368,7 @@ function GlassCardMesh({
 
 function CameraRig({ isMobile }: { isMobile: boolean }) {
   useFrame(({ camera }) => {
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, 0.35, 0);
   });
   return null;
 }
@@ -381,6 +380,7 @@ function RingCard({
   radius,
   isActive,
   anyActive,
+  glitterEnabled = false,
   onSelect,
 }: {
   item: RingShowcaseItem;
@@ -389,10 +389,13 @@ function RingCard({
   radius: number;
   isActive: boolean;
   anyActive: boolean;
+  glitterEnabled?: boolean;
   onSelect: (index: number) => void;
 }) {
   const meshRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
+  const isFrontRef = useRef(index < 5);
+  const [isFront, setIsFront] = useState(index < 5);
   const angle = (index / total) * Math.PI * 2;
   const baseX = Math.sin(angle) * radius;
   const baseZ = Math.cos(angle) * radius;
@@ -400,27 +403,40 @@ function RingCard({
   useFrame(({ clock }, delta) => {
     if (!meshRef.current) return;
     const targetScale = isActive ? 1.22 : anyActive ? 0.92 : 1.0;
-    const targetZOffset = isActive ? 0.50 : (hovered ? 0.14 : 0);
+    const targetZOffset = isActive ? 0.48 : (hovered ? 0.14 : 0);
     // Ribbon / orbit wave motion from Gallery source
-    const ribbonWave = Math.sin(angle * 2.0 + clock.getElapsedTime() * 0.7) * 0.12;
-    const targetY = (hovered ? 0.16 : 0) + ribbonWave;
+    const ribbonWave = Math.sin(angle * 2.0 + clock.getElapsedTime() * 0.9) * 0.07;
+    const targetY = (hovered ? 0.14 : 0) + ribbonWave;
 
     // Human-crafted playful organic tilt (anti-AI mechanical symmetry)
-    const organicTiltZ = isActive ? 0 : Math.sin(index * 1.618) * 0.045;
-    const organicTiltX = isActive ? 0 : Math.cos(index * 2.3) * 0.035;
+    const organicTiltZ = isActive ? 0 : Math.sin(index * 1.618) * 0.040;
+    const organicTiltX = isActive ? 0 : Math.cos(index * 2.3) * 0.030;
 
-    meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7, delta);
-    meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7, delta);
-    meshRef.current.scale.z = THREE.MathUtils.damp(meshRef.current.scale.z, targetScale, 7, delta);
+    meshRef.current.scale.x = THREE.MathUtils.damp(meshRef.current.scale.x, targetScale, 7.5, delta);
+    meshRef.current.scale.y = THREE.MathUtils.damp(meshRef.current.scale.y, targetScale, 7.5, delta);
+    meshRef.current.scale.z = THREE.MathUtils.damp(meshRef.current.scale.z, targetScale, 7.5, delta);
 
     meshRef.current.rotation.z = THREE.MathUtils.damp(meshRef.current.rotation.z, organicTiltZ, 6, delta);
     meshRef.current.rotation.x = THREE.MathUtils.damp(meshRef.current.rotation.x, organicTiltX, 6, delta);
+
+    // Subtle curvature towards camera for enhanced presentation
+    const targetRotY = angle + Math.sin(angle) * -0.20;
+    meshRef.current.rotation.y = THREE.MathUtils.damp(meshRef.current.rotation.y, targetRotY, 6, delta);
 
     const forwardX = Math.sin(angle) * (radius + targetZOffset);
     const forwardZ = Math.cos(angle) * (radius + targetZOffset);
     meshRef.current.position.x = THREE.MathUtils.damp(meshRef.current.position.x, forwardX, 7, delta);
     meshRef.current.position.y = THREE.MathUtils.damp(meshRef.current.position.y, targetY, 7, delta);
     meshRef.current.position.z = THREE.MathUtils.damp(meshRef.current.position.z, forwardZ, 7, delta);
+
+    // Track whether this card is in the front half facing the camera
+    const worldPos = new THREE.Vector3();
+    meshRef.current.getWorldPosition(worldPos);
+    const front = worldPos.z > -0.35;
+    if (front !== isFrontRef.current) {
+      isFrontRef.current = front;
+      setIsFront(front);
+    }
   });
 
   const handleClick = (e: any) => {
@@ -440,6 +456,7 @@ function RingCard({
           cardIndex={index}
           isActive={isActive}
           hovered={hovered}
+          glitterEnabled={glitterEnabled}
           onClick={handleClick}
           onPointerOver={(e) => {
             e.stopPropagation();
@@ -454,10 +471,38 @@ function RingCard({
         />
       </Suspense>
 
+      {/* Comic Artist Tag Pill Floating Under Front Cards (Raised safely above green field) */}
+      {isFront && (
+        <Html
+          position={[0, -1.04, 0.12]}
+          distanceFactor={4.2}
+          center
+          pointerEvents="none"
+        >
+          <div
+            className={`whitespace-nowrap transition-all duration-300 font-extrabold text-[11px] px-3.5 py-1 rounded-full border-2 select-none ${
+              isActive
+                ? 'bg-[#FFD400] text-[#211529] border-[#211529] scale-110 shadow-[3px_3px_0px_#211529]'
+                : 'bg-white text-[#211529] shadow-[2px_2px_0px_#211529]'
+            }`}
+            style={{
+              backgroundColor: isActive
+                ? '#FFD400'
+                : (item.id === 'cycle-ramen-01' ? '#FFF0F5' : item.id === 'hangjam-alchemist-02' ? '#FFF9D6' : '#FFFFFF'),
+              borderColor: isActive
+                ? '#211529'
+                : (item.id === 'cycle-ramen-01' ? '#FF66B2' : item.id === 'hangjam-alchemist-02' ? '#FFD400' : '#211529'),
+            }}
+          >
+            Drawn by {item.id === 'hangjam-alchemist-02' ? '@ls680' : item.id === 'cycle-skater-04' ? '@hrix' : item.id === 'hangjam-painter-05' ? '@chris8' : item.id === 'epiphrame-vibe-reel-06' ? '@white' : `@${item.artistName.toLowerCase()} ✿`}
+          </div>
+        </Html>
+      )}
+
       {/* Floating Yellow Flower Mascot Accent perched on the active card top-right */}
       {isActive && (
         <Html
-          position={[0.54, 1.02, 0.08]}
+          position={[0.42, 0.80, 0.08]}
           distanceFactor={3.4}
           pointerEvents="none"
         >
@@ -465,7 +510,7 @@ function RingCard({
             <img
               src="/assets/mascots/flower-yellow.png"
               alt="Yellow Flower Mascot Accent"
-              className="w-12 h-12 object-contain select-none pointer-events-none"
+              className="w-10 h-10 object-contain select-none pointer-events-none"
             />
           </div>
         </Html>
@@ -474,122 +519,74 @@ function RingCard({
   );
 }
 
-function CenterpieceHeading3D({ isMobile }: { isMobile: boolean }) {
-  const meshRef = useRef<THREE.Group>(null);
-  const textureRef = useRef<THREE.CanvasTexture | null>(null);
-
-  const headingTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 768;
-    const ctx = canvas.getContext('2d')!;
-
-    const renderText = () => {
-      ctx.clearRect(0, 0, 2048, 768);
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      // 1. Playful Tagline Badge Pill (Manga Archival Paper with Deep Sumi Comic Outline & Coral Star)
-      ctx.save();
-      ctx.fillStyle = '#F9F6F0';
-      ctx.beginPath();
-      if ((ctx as any).roundRect) {
-        (ctx as any).roundRect(1024 - 280, 75, 560, 68, 34);
-      } else {
-        ctx.rect(1024 - 280, 75, 560, 68);
-      }
-      ctx.fill();
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = '#141316';
-      ctx.stroke();
-
-      ctx.fillStyle = '#FF425E';
-      ctx.font = '800 25px Fredoka, ui-monospace, sans-serif';
-      ctx.fillText('✦ CHARACTER & MOTION STUDIO ✦', 1024, 110);
-      ctx.restore();
-
-      // 2. Playful, Energetic Pop Headline "EPIPHRAME" (Riso Acid Coral with Deep Sumi Ink Stroke)
-      ctx.save();
-      // Calibrated Acid Coral Drop Shadow
-      ctx.shadowColor = 'rgba(255, 66, 94, 0.45)';
-      ctx.shadowBlur = 36;
-      ctx.shadowOffsetY = 14;
-
-      const grad = ctx.createLinearGradient(1024, 140, 1024, 460);
-      grad.addColorStop(0, '#FFFFFF');
-      grad.addColorStop(0.35, '#FFF2F5');
-      grad.addColorStop(0.75, '#FF425E'); // Riso Acid Coral
-      grad.addColorStop(1, '#D92543');
-
-      ctx.font = '800 230px Fredoka, Syne, system-ui, sans-serif';
-
-      // Chunky Deep Sumi Ink Outline
-      ctx.lineWidth = 14;
-      ctx.strokeStyle = '#141316';
-      ctx.lineJoin = 'round';
-      ctx.strokeText('EPIPHRAME', 1024, 320);
-
-      // Gradient Fill
-      ctx.fillStyle = grad;
-      ctx.fillText('EPIPHRAME', 1024, 320);
-      ctx.restore();
-
-      // 3. Subtitle Pill (Deep Sumi Ink with Archival Paper Text & Coral Rim)
-      ctx.save();
-      ctx.fillStyle = '#141316';
-      ctx.beginPath();
-      if ((ctx as any).roundRect) {
-        (ctx as any).roundRect(1024 - 360, 460, 720, 58, 29);
-      } else {
-        ctx.rect(1024 - 360, 460, 720, 58);
-      }
-      ctx.fill();
-      ctx.lineWidth = 3.5;
-      ctx.strokeStyle = '#FF425E';
-      ctx.stroke();
-
-      ctx.fillStyle = '#F9F6F0';
-      ctx.font = '800 23px Fredoka, Syne, sans-serif';
-      ctx.fillText('CHARACTER ART · VIRAL WORLD ADS · 60 FPS', 1024, 490);
-      ctx.restore();
-    };
-
-    renderText();
-
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        renderText();
-        if (textureRef.current) textureRef.current.needsUpdate = true;
-      });
-    }
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    textureRef.current = tex;
-    return tex;
-  }, []);
+// 3D Iridescent Saturn-like Orbit Ring - tilted forward and positioned behind front cards
+function OrbitHaloRing({ radius = 3.8 }: { radius?: number }) {
+  const outerRef = useRef<THREE.Mesh>(null);
+  const innerRef = useRef<THREE.Mesh>(null);
+  const bandRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
-    if (!meshRef.current) return;
-    // Elegant floating bobbing motion
     const t = clock.getElapsedTime();
-    meshRef.current.position.y = 0.12 + Math.sin(t * 1.4) * 0.06;
+    if (bandRef.current) {
+      (bandRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        0.32 + Math.sin(t * 1.5) * 0.08;
+    }
   });
 
-  if (!headingTexture) return null;
-
-  const scale = isMobile ? 0.65 : 1.0;
-
   return (
-    <group ref={meshRef} position={[0, 0.12, 0]} scale={[scale, scale, scale]}>
-      <mesh>
-        <planeGeometry args={[5.2, 1.95]} />
-        <meshBasicMaterial
-          map={headingTexture}
+    // Scaled elliptical (wide in X, shallow in Z) and tilted forward by ~15 deg (Math.PI * 0.43)
+    // Shifted back in Z (Z = -0.42) so front of ring is at Z = +2.40, well behind front cards (Z = +3.8 to +4.3)
+    <group
+      position={[0, -0.34, -0.42]}
+      rotation={[Math.PI * 0.43, 0, 0]}
+      scale={[1.20, 1.0, 0.74]}
+    >
+      {/* Outer Glow Tube */}
+      <mesh ref={outerRef} renderOrder={1}>
+        <torusGeometry args={[radius + 0.32, 0.022, 16, 128]} />
+        <meshStandardMaterial
+          color="#EAF6FF"
+          emissive="#D4EDFF"
+          emissiveIntensity={0.55}
+          roughness={0.2}
+          metalness={0.5}
           transparent
-          toneMapped={false}
+          opacity={0.85}
           depthWrite={false}
+          depthTest={true}
+        />
+      </mesh>
+
+      {/* Inner Glow Tube */}
+      <mesh ref={innerRef} renderOrder={1}>
+        <torusGeometry args={[radius - 0.25, 0.016, 16, 128]} />
+        <meshStandardMaterial
+          color="#FFF2FA"
+          emissive="#FFD6F0"
+          emissiveIntensity={0.55}
+          roughness={0.2}
+          metalness={0.5}
+          transparent
+          opacity={0.85}
+          depthWrite={false}
+          depthTest={true}
+        />
+      </mesh>
+
+      {/* Translucent Iridescent Disc Ribbon */}
+      <mesh ref={bandRef} position={[0, 0, 0]} renderOrder={1}>
+        <ringGeometry args={[radius - 0.25, radius + 0.32, 128]} />
+        <meshStandardMaterial
+          color="#F2EEFA"
+          emissive="#E3D7FA"
+          emissiveIntensity={0.30}
+          transparent
+          opacity={0.42}
+          roughness={0.3}
+          metalness={0.6}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+          depthTest={true}
         />
       </mesh>
     </group>
@@ -600,14 +597,20 @@ function RingStage({
   activeIndex,
   onSelect,
   scrollRotationRef,
+  isDraggingRef,
+  dragVelocityRef,
   onFrontChange,
   isMobile,
+  glitterEnabled = false,
 }: {
   activeIndex: number | null;
   onSelect: (i: number) => void;
   scrollRotationRef: React.MutableRefObject<number>;
+  isDraggingRef: React.MutableRefObject<boolean>;
+  dragVelocityRef: React.MutableRefObject<number>;
   onFrontChange: (i: number) => void;
   isMobile: boolean;
+  glitterEnabled?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const total = RING_SHOWCASE_ITEMS.length;
@@ -616,12 +619,22 @@ function RingStage({
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
-    // Subtle autonomous orbit drift from Gallery source
-    scrollRotationRef.current += 0.0010;
+
+    if (!isDraggingRef.current) {
+      if (Math.abs(dragVelocityRef.current) > 0.00008) {
+        // Silky-smooth momentum physics glide on drag flick / release
+        scrollRotationRef.current += dragVelocityRef.current;
+        dragVelocityRef.current *= 0.945; // Buttery physical friction decay
+      } else {
+        // Continuous gentle ambient drift when idle
+        scrollRotationRef.current += 0.0008;
+      }
+    }
+
     groupRef.current.rotation.y = THREE.MathUtils.damp(
       groupRef.current.rotation.y,
       scrollRotationRef.current,
-      6,
+      5.5,
       delta
     );
 
@@ -636,9 +649,9 @@ function RingStage({
   });
 
   return (
-    <group rotation={[0.06, 0, 0]}>
-      {/* 3D Centerpiece Typography at z = 0 (GalleryHeading depth layout) */}
-      <CenterpieceHeading3D isMobile={isMobile} />
+    <group position={[0, isMobile ? 0.28 : 0.44, 0]} rotation={[0.035, 0, 0]}>
+      {/* 3D Iridescent Saturn-like Orbit Ring */}
+      <OrbitHaloRing radius={radius} />
 
       <group ref={groupRef}>
         {RING_SHOWCASE_ITEMS.map((item, i) => (
@@ -650,6 +663,7 @@ function RingStage({
             radius={radius}
             isActive={activeIndex === i}
             anyActive={activeIndex !== null}
+            glitterEnabled={glitterEnabled}
             onSelect={onSelect}
           />
         ))}
@@ -658,10 +672,360 @@ function RingStage({
   );
 }
 
+function PuffyCloud({
+  color = '#FFFFFF',
+  shadowColor = '#D8DEE9',
+  className = '',
+}: {
+  color?: string;
+  shadowColor?: string;
+  className?: string;
+}) {
+  return (
+    <svg
+      width="180"
+      height="110"
+      viewBox="0 0 180 110"
+      fill="none"
+      className={`select-none pointer-events-none drop-shadow-[0_4px_10px_rgba(0,0,0,0.06)] ${className}`}
+    >
+      <g>
+        {/* Darker Underside Shadow Curve */}
+        <ellipse cx="90" cy="74" rx="72" ry="26" fill={shadowColor} />
+        <ellipse cx="48" cy="64" rx="34" ry="28" fill={shadowColor} />
+        <ellipse cx="132" cy="64" rx="34" ry="28" fill={shadowColor} />
+
+        {/* Main Puffy Upper Body */}
+        <ellipse cx="90" cy="68" rx="70" ry="26" fill={color} />
+        <ellipse cx="50" cy="56" rx="32" ry="28" fill={color} />
+        <ellipse cx="88" cy="42" rx="38" ry="32" fill={color} />
+        <ellipse cx="128" cy="56" rx="30" ry="26" fill={color} />
+      </g>
+    </svg>
+  );
+}
+
+function Sparkle4Point({
+  size = 24,
+  color = '#00E5FF',
+  className = '',
+}: {
+  size?: number;
+  color?: string;
+  className?: string;
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} fill="none">
+      <path
+        d="M12 0 C12 6.627 6.627 12 0 12 C6.627 12 12 17.373 12 24 C12 17.373 17.373 12 24 12 C17.373 12 12 6.627 12 0 Z"
+        fill={color}
+        stroke="#211529"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
+function SkyMascot({
+  mode,
+  onClick,
+}: {
+  mode: 'day' | 'sunset' | 'night';
+  onClick: () => void;
+}) {
+  const isNight = mode === 'night';
+
+  return (
+    <div className="absolute top-20 right-8 md:right-24 z-30 pointer-events-auto">
+      <motion.div
+        onClick={onClick}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="flex flex-col items-center cursor-pointer select-none"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.85, y: 20 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 18 }}
+      >
+        <div className="relative w-28 h-28 flex items-center justify-center">
+          {!isNight ? (
+            /* DAY / SUNSET 3D SUN */
+            <svg
+              width="116"
+              height="116"
+              viewBox="0 0 100 100"
+              className="drop-shadow-[0_4px_12px_rgba(255,212,0,0.45)]"
+            >
+              <defs>
+                <radialGradient id="sunGrad" cx="38%" cy="38%" r="62%">
+                  <stop offset="0%" stopColor="#FFF9B0" />
+                  <stop offset="65%" stopColor="#FFD400" />
+                  <stop offset="100%" stopColor="#FFAC00" />
+                </radialGradient>
+                <linearGradient id="rayGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#FFE033" />
+                  <stop offset="100%" stopColor="#FF9B00" />
+                </linearGradient>
+              </defs>
+
+              {/* 8 3D Sculpted Rays with Dark Ink Outline */}
+              <g stroke="#211529" strokeWidth="2.8" strokeLinejoin="round" fill="url(#rayGrad)">
+                <polygon points="50,2 43,18 57,18" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(45 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(90 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(135 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(180 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(225 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(270 50 50)" />
+                <polygon points="50,2 43,18 57,18" transform="rotate(315 50 50)" />
+              </g>
+
+              {/* Main Glowing Sphere */}
+              <circle
+                cx="50"
+                cy="50"
+                r="34"
+                fill="url(#sunGrad)"
+                stroke="#211529"
+                strokeWidth="2.8"
+              />
+
+              {/* Rosy Pink Blush Cheeks */}
+              <ellipse cx="37" cy="54" rx="4.5" ry="3.2" fill="#FF66B2" />
+              <ellipse cx="63" cy="54" rx="4.5" ry="3.2" fill="#FF66B2" />
+
+              {/* Curved Happy Smiling Eyes */}
+              <path
+                d="M34,46 Q38,41 42,46"
+                fill="none"
+                stroke="#211529"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M58,46 Q62,41 66,46"
+                fill="none"
+                stroke="#211529"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+              />
+
+              {/* Joyful Smile */}
+              <path
+                d="M44,52 Q50,60 56,52"
+                fill="none"
+                stroke="#211529"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
+            /* NIGHT CRESCENT MOON */
+            <svg
+              width="108"
+              height="108"
+              viewBox="0 0 100 100"
+              className="drop-shadow-[0_4px_16px_rgba(255,212,0,0.6)]"
+            >
+              <defs>
+                <linearGradient id="moonGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#FFF275" />
+                  <stop offset="60%" stopColor="#FFD400" />
+                  <stop offset="100%" stopColor="#E5A600" />
+                </linearGradient>
+              </defs>
+
+              {/* Floating Little Twinkle Stars */}
+              <polygon
+                points="24,20 26,26 32,28 26,30 24,36 22,30 16,28 22,26"
+                fill="#FFF475"
+                stroke="#211529"
+                strokeWidth="1.2"
+              />
+              <polygon
+                points="18,52 19,56 23,57 19,58 18,62 17,58 13,57 17,56"
+                fill="#FFF475"
+                stroke="#211529"
+                strokeWidth="1.2"
+              />
+
+              {/* Smiling Crescent Body */}
+              <path
+                d="M 68,12 C 42,14 26,36 30,64 C 34,84 56,92 76,82 C 54,82 46,62 48,46 C 50,30 62,18 68,12 Z"
+                fill="url(#moonGrad)"
+                stroke="#211529"
+                strokeWidth="2.8"
+                strokeLinejoin="round"
+              />
+
+              {/* Sweet Sleeping / Smiling Eye */}
+              <path
+                d="M 44,48 Q 48,43 52,48"
+                fill="none"
+                stroke="#211529"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Blush Cheek */}
+              <ellipse cx="48" cy="57" rx="3.5" ry="2.5" fill="#FF66B2" />
+
+              {/* Gentle Smile */}
+              <path
+                d="M 52,56 Q 56,62 60,57"
+                fill="none"
+                stroke="#211529"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+        </div>
+
+        {/* Dangling Comic Tag with Connector Line */}
+        <div className="relative -mt-1 flex flex-col items-center">
+          <div className="w-[2px] h-3 bg-[#211529]" />
+          <div className="bg-white border-2 border-[#211529] px-3 py-1 rounded-xl text-[10px] font-black shadow-[2px_2px_0px_#211529] rotate-12 text-[#211529] leading-tight text-center tracking-tight select-none">
+            PULL ME TO<br />CHANGE SKY!
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function RollingGreenHills() {
+  return (
+    <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
+      <svg
+        viewBox="0 0 1440 220"
+        className="w-full h-24 sm:h-28 md:h-32 block select-none"
+        preserveAspectRatio="none"
+      >
+        {/* Layer 1: Back Rolling Hill (Dark Emerald Green) */}
+        <path
+          d="M0,110 C240,40 520,130 760,80 C1000,30 1220,120 1440,65 L1440,220 L0,220 Z"
+          fill="#1E7E48"
+        />
+
+        {/* Back Hill Grass Tufts */}
+        <g stroke="#145A32" strokeWidth="2" strokeLinecap="round" fill="none">
+          <path d="M 280,118 Q 284,108 288,118 Q 292,106 296,118 Q 300,110 304,118" />
+          <path d="M 720,102 Q 724,92 728,102 Q 732,90 736,102 Q 740,94 744,102" />
+          <path d="M 1120,88 Q 1124,78 1128,88 Q 1132,76 1136,88 Q 1140,80 1144,88" />
+        </g>
+
+        {/* Layer 2: Front Rolling Hill (Vibrant Fresh Green) */}
+        <path
+          d="M0,140 C280,85 580,165 880,115 C1100,75 1300,140 1440,95 L1440,220 L0,220 Z"
+          fill="#27AE60"
+        />
+
+        {/* Front Hill Doodle Grass Tufts */}
+        <g stroke="#211529" strokeWidth="2.2" strokeLinecap="round" fill="none">
+          <path d="M 40,165 Q 44,152 48,165 Q 52,150 56,165 Q 60,154 64,165" />
+          <path d="M 240,172 Q 244,160 248,172 Q 252,158 256,172 Q 260,162 264,172" />
+          <path d="M 420,185 Q 424,174 428,185 Q 432,170 436,185 Q 440,176 444,185" />
+          <path d="M 620,176 Q 624,164 628,176 Q 632,160 636,176 Q 640,166 644,176" />
+          <path d="M 820,168 Q 824,156 828,168 Q 832,154 836,168 Q 840,158 844,168" />
+          <path d="M 1040,165 Q 1044,152 1048,165 Q 1052,150 1056,165 Q 1060,154 1064,165" />
+          <path d="M 1260,158 Q 1264,146 1268,158 Q 1272,142 1276,158 Q 1280,148 1284,158" />
+          <path d="M 1380,150 Q 1384,138 1388,150 Q 1392,136 1396,150" />
+        </g>
+
+        {/* Blooming Flowers on Front Hills */}
+        {/* Flower 1: Yellow Smiling Daisy (Left) */}
+        <g transform="translate(62, 142)">
+          <path d="M 12,24 Q 10,14 12,6" stroke="#211529" strokeWidth="2" fill="none" />
+          <path d="M 10,16 Q 4,14 6,10 Q 10,12 11,15" fill="#2ECC71" stroke="#211529" strokeWidth="1.5" />
+          <circle cx="12" cy="6" r="10" fill="#FFD400" stroke="#211529" strokeWidth="2" />
+          <circle cx="12" cy="6" r="5" fill="#FFE247" stroke="#211529" strokeWidth="1.2" />
+          <circle cx="10" cy="5" r="0.8" fill="#211529" />
+          <circle cx="14" cy="5" r="0.8" fill="#211529" />
+          <path d="M 10,7 Q 12,8.5 14,7" stroke="#211529" strokeWidth="1" strokeLinecap="round" fill="none" />
+        </g>
+
+        {/* Flower 2: Pink Blossom (Left-Center) */}
+        <g transform="translate(112, 152)">
+          <path d="M 10,22 Q 12,12 10,4" stroke="#211529" strokeWidth="2" fill="none" />
+          <circle cx="10" cy="4" r="8" fill="#FF66B2" stroke="#211529" strokeWidth="2" />
+          <circle cx="10" cy="4" r="3.5" fill="#FFD400" stroke="#211529" strokeWidth="1.2" />
+        </g>
+
+        {/* Flower 3: Orange Tulip (Left) */}
+        <g transform="translate(168, 160)">
+          <path d="M 8,20 Q 6,10 8,4" stroke="#211529" strokeWidth="2" fill="none" />
+          <path d="M 3,4 Q 8,-4 13,4 Q 8,10 3,4 Z" fill="#FF7A00" stroke="#211529" strokeWidth="2" />
+        </g>
+
+        {/* Flower 4: White Daisy (Center) */}
+        <g transform="translate(215, 172)">
+          <path d="M 8,18 Q 8,10 8,4" stroke="#211529" strokeWidth="1.8" fill="none" />
+          <circle cx="8" cy="4" r="6" fill="#FFFFFF" stroke="#211529" strokeWidth="1.8" />
+          <circle cx="8" cy="4" r="2.5" fill="#FFD400" />
+        </g>
+
+        {/* Flower 5: Pink Blossom (Right-Center) */}
+        <g transform="translate(1210, 150)">
+          <path d="M 10,22 Q 8,12 10,4" stroke="#211529" strokeWidth="2" fill="none" />
+          <circle cx="10" cy="4" r="7.5" fill="#FF66B2" stroke="#211529" strokeWidth="2" />
+          <circle cx="10" cy="4" r="3" fill="#FFE247" stroke="#211529" strokeWidth="1.2" />
+        </g>
+
+        {/* Flower 6: Yellow Smiling Daisy (Far Right) */}
+        <g transform="translate(1320, 134)">
+          <path d="M 12,24 Q 14,14 12,6" stroke="#211529" strokeWidth="2" fill="none" />
+          <circle cx="12" cy="6" r="9" fill="#FFD400" stroke="#211529" strokeWidth="2" />
+          <circle cx="12" cy="6" r="4.5" fill="#FFF275" stroke="#211529" strokeWidth="1.2" />
+          <circle cx="10.5" cy="5" r="0.8" fill="#211529" />
+          <circle cx="13.5" cy="5" r="0.8" fill="#211529" />
+          <path d="M 10.5,7 Q 12,8.2 13.5,7" stroke="#211529" strokeWidth="1" strokeLinecap="round" fill="none" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+const NIGHT_STARS = [
+  { top: '8%', left: '12%', delay: 0.2, duration: 2.1 },
+  { top: '15%', left: '28%', delay: 0.8, duration: 1.8 },
+  { top: '6%', left: '45%', delay: 0.1, duration: 2.4 },
+  { top: '12%', left: '62%', delay: 1.2, duration: 1.9 },
+  { top: '9%', left: '78%', delay: 0.5, duration: 2.2 },
+  { top: '18%', left: '88%', delay: 1.5, duration: 1.7 },
+  { top: '24%', left: '16%', delay: 0.3, duration: 2.5 },
+  { top: '28%', left: '35%', delay: 1.1, duration: 2.0 },
+  { top: '22%', left: '52%', delay: 0.7, duration: 1.6 },
+  { top: '30%', left: '70%', delay: 1.4, duration: 2.3 },
+  { top: '25%', left: '84%', delay: 0.4, duration: 1.9 },
+  { top: '38%', left: '8%', delay: 0.9, duration: 2.1 },
+  { top: '35%', left: '22%', delay: 1.6, duration: 1.8 },
+  { top: '42%', left: '40%', delay: 0.2, duration: 2.6 },
+  { top: '36%', left: '58%', delay: 1.0, duration: 2.2 },
+  { top: '40%', left: '80%', delay: 0.6, duration: 1.7 },
+  { top: '48%', left: '18%', delay: 1.3, duration: 2.0 },
+  { top: '52%', left: '32%', delay: 0.4, duration: 2.4 },
+  { top: '46%', left: '72%', delay: 1.7, duration: 1.9 },
+  { top: '55%', left: '86%', delay: 0.8, duration: 2.2 },
+  { top: '14%', left: '6%', delay: 0.5, duration: 2.3 },
+  { top: '4%', left: '33%', delay: 1.2, duration: 1.6 },
+  { top: '11%', left: '50%', delay: 0.3, duration: 2.1 },
+  { top: '5%', left: '67%', delay: 1.4, duration: 2.5 },
+  { top: '16%', left: '94%', delay: 0.7, duration: 1.8 },
+  { top: '32%', left: '4%', delay: 1.1, duration: 2.0 },
+  { top: '44%', left: '26%', delay: 0.1, duration: 2.7 },
+  { top: '50%', left: '64%', delay: 1.5, duration: 1.9 },
+  { top: '27%', left: '92%', delay: 0.6, duration: 2.2 },
+  { top: '39%', left: '90%', delay: 1.0, duration: 2.4 },
+];
+
 export default function CircularRingHero() {
+  const [skyMode, setSkyMode] = useState<'day' | 'sunset' | 'night'>('day');
+  const [glitterEnabled, setGlitterEnabled] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
   const [isMobile, setIsMobile] = useState(false);
   const scrollRotationRef = useRef<number>(0);
+  const dragVelocityRef = useRef<number>(0);
+  const lastXRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const hasMovedRef = useRef(false);
@@ -714,19 +1078,34 @@ export default function CircularRingHero() {
     isDraggingRef.current = true;
     hasMovedRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = performance.now();
+    dragVelocityRef.current = 0;
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
-    const deltaX = e.clientX - dragStartRef.current.x;
-    const deltaY = e.clientY - dragStartRef.current.y;
-    if (Math.hypot(deltaX, deltaY) > 5) {
+    const now = performance.now();
+    const dt = Math.max(1, now - lastTimeRef.current);
+    const deltaX = e.clientX - lastXRef.current;
+    const totalDeltaX = e.clientX - dragStartRef.current.x;
+    const totalDeltaY = e.clientY - dragStartRef.current.y;
+
+    if (Math.hypot(totalDeltaX, totalDeltaY) > 5) {
       hasMovedRef.current = true;
     }
     if (hasMovedRef.current) {
-      scrollRotationRef.current += (e.clientX - dragStartRef.current.x) * 0.003;
-      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      scrollRotationRef.current += deltaX * 0.0030;
+      // Instantaneous flick momentum velocity
+      const instantVelocity = (deltaX / dt) * 0.034;
+      dragVelocityRef.current = THREE.MathUtils.clamp(
+        instantVelocity,
+        -0.065,
+        0.065
+      );
     }
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = now;
   };
 
   const handlePointerUp = () => {
@@ -755,28 +1134,158 @@ export default function CircularRingHero() {
     handleSelect(nextIndex);
   };
 
+  const cycleSkyMode = () => {
+    setSkyMode((prev) => {
+      if (prev === 'day') return 'sunset';
+      if (prev === 'sunset') return 'night';
+      return 'day';
+    });
+  };
+
   const activeItem = activeIndex !== null ? RING_SHOWCASE_ITEMS[activeIndex] : null;
+
+  const skyGradientClass =
+    skyMode === 'day'
+      ? 'bg-gradient-to-b from-[#1388E5] via-[#80B0E8] to-[#F6EDE4]'
+      : skyMode === 'sunset'
+      ? 'bg-gradient-to-b from-[#5542BB] via-[#FF66B2] to-[#FFD400]'
+      : 'bg-gradient-to-b from-[#150E26] via-[#2A174E] to-[#452470]';
+
+  // Cloud palette colors based on skyMode
+  const cloudPink = skyMode === 'night' ? '#7E4FA0' : '#FF66B2';
+  const cloudPinkShadow = skyMode === 'night' ? '#532E70' : '#D9408E';
+  const cloudWhite = skyMode === 'night' ? '#A27AC2' : '#FFFFFF';
+  const cloudWhiteShadow = skyMode === 'night' ? '#684285' : '#D5DCE8';
+  const cloudPastelPink = skyMode === 'night' ? '#8E5EB0' : '#FFC0D0';
+  const cloudPastelPinkShadow = skyMode === 'night' ? '#5D357A' : '#EAA4B8';
 
   return (
     <section
-      className="relative w-full h-screen bg-[var(--bg-surface)] overflow-hidden select-none cursor-grab active:cursor-grabbing"
+      className={`relative w-full h-screen ${skyGradientClass} transition-colors duration-700 overflow-hidden select-none cursor-grab active:cursor-grabbing`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      {/* Top Hero Interaction Guidance */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none w-full max-w-xl px-4">
-        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest px-4 py-1.5 rounded-full border border-[#141316]/15 dark:border-[#F9F6F0]/20 bg-[var(--bg-surface)]/85 backdrop-blur-md text-[var(--text-primary)] shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-[#FF425E] animate-pulse" />
-          SPIN RING TO EXPLORE · SELECT CARD TO INSPECT
-        </span>
-      </div>
+      {/* Night mode stars */}
+      {skyMode === 'night' && (
+        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+          {NIGHT_STARS.map((star, idx) => (
+            <motion.div
+              key={idx}
+              className="absolute w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_#FFFFFF]"
+              style={{ top: star.top, left: star.left }}
+              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }}
+              transition={{
+                duration: star.duration,
+                delay: star.delay,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          ))}
+        </div>
+      )}
 
+      {/* 4-Point Floating Sparkle Stars Around Center Ring */}
+      <motion.div
+        animate={{ rotate: [0, 15, -15, 0], scale: [0.9, 1.15, 0.9] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-[42%] left-[22%] z-20 pointer-events-none"
+      >
+        <Sparkle4Point size={26} color="#00E5FF" />
+      </motion.div>
+      <motion.div
+        animate={{ rotate: [0, -20, 20, 0], scale: [1, 1.25, 1] }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+        className="absolute top-[38%] right-[22%] z-20 pointer-events-none"
+      >
+        <Sparkle4Point size={28} color="#FFD400" />
+      </motion.div>
+      <motion.div
+        animate={{ rotate: [0, 15, -15, 0], scale: [0.85, 1.2, 0.85] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute top-[58%] left-[26%] z-20 pointer-events-none"
+      >
+        <Sparkle4Point size={22} color="#FF66B2" />
+      </motion.div>
+      <motion.div
+        animate={{ rotate: [0, -15, 15, 0], scale: [0.9, 1.2, 0.9] }}
+        transition={{ duration: 3.0, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+        className="absolute top-[62%] right-[26%] z-20 pointer-events-none"
+      >
+        <Sparkle4Point size={24} color="#FFFFFF" />
+      </motion.div>
+
+      {/* Interactive Draggable & Squishy Puffy Clouds */}
+      <motion.div
+        drag
+        dragConstraints={{ top: -100, bottom: 100, left: -200, right: 200 }}
+        initial={{ rotate: -4, scale: 1.1 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scaleX: 1.18, scaleY: 0.85 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-28 left-6 md:left-12 z-10 cursor-grab active:cursor-grabbing"
+      >
+        <PuffyCloud color={cloudPink} shadowColor={cloudPinkShadow} />
+      </motion.div>
+
+      <motion.div
+        drag
+        dragConstraints={{ top: -100, bottom: 100, left: -200, right: 200 }}
+        initial={{ rotate: 3, scale: 0.9 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scaleX: 1.18, scaleY: 0.85 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-16 left-[22%] z-10 cursor-grab active:cursor-grabbing"
+      >
+        <PuffyCloud color={cloudWhite} shadowColor={cloudWhiteShadow} />
+      </motion.div>
+
+      <motion.div
+        drag
+        dragConstraints={{ top: -100, bottom: 100, left: -200, right: 200 }}
+        initial={{ rotate: -2, scale: 1.15 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scaleX: 1.18, scaleY: 0.85 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-24 right-[25%] z-10 cursor-grab active:cursor-grabbing"
+      >
+        <PuffyCloud color={cloudPastelPink} shadowColor={cloudPastelPinkShadow} />
+      </motion.div>
+
+      <motion.div
+        drag
+        dragConstraints={{ top: -100, bottom: 100, left: -200, right: 200 }}
+        initial={{ rotate: 5, scale: 0.8 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scaleX: 1.18, scaleY: 0.85 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute bottom-44 left-10 z-10 cursor-grab active:cursor-grabbing"
+      >
+        <PuffyCloud color={cloudPink} shadowColor={cloudPinkShadow} />
+      </motion.div>
+
+      <motion.div
+        drag
+        dragConstraints={{ top: -100, bottom: 100, left: -200, right: 200 }}
+        initial={{ rotate: -3, scale: 1.1 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scaleX: 1.18, scaleY: 0.85 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute bottom-36 right-8 md:right-16 z-10 cursor-grab active:cursor-grabbing"
+      >
+        <PuffyCloud color={cloudPink} shadowColor={cloudPinkShadow} />
+      </motion.div>
+
+      {/* Interactive Sun & Moon Mascot */}
+      <SkyMascot mode={skyMode} onClick={cycleSkyMode} />
+
+      {/* 3D Ring Canvas */}
       <WebGLErrorBoundary>
         <Canvas
           camera={{
-            position: [0, isMobile ? 0.6 : 0.35, isMobile ? 11.5 : 9.6],
-            fov: isMobile ? 38 : 32,
+            position: [0, isMobile ? 0.7 : 0.45, isMobile ? 11.2 : 9.4],
+            fov: isMobile ? 38 : 31,
           }}
           dpr={[1, 1.5]}
         >
@@ -788,12 +1297,14 @@ export default function CircularRingHero() {
             activeIndex={activeIndex}
             onSelect={handleSelect}
             scrollRotationRef={scrollRotationRef}
+            isDraggingRef={isDraggingRef}
+            dragVelocityRef={dragVelocityRef}
             onFrontChange={(idx) => setActiveIndex(idx)}
             isMobile={isMobile}
+            glitterEnabled={glitterEnabled}
           />
-          {/* Subtle, soft warm floor shadow */}
           <ContactShadows
-            position={[0, -1.02, 0]}
+            position={[0, -0.75, 0]}
             opacity={0.16}
             scale={14}
             blur={2.8}
@@ -803,59 +1314,52 @@ export default function CircularRingHero() {
         </Canvas>
       </WebGLErrorBoundary>
 
-      {/* Clean absolute bottom-left caption box inside Hero section */}
-      {activeItem && (
-        <div className="absolute bottom-8 left-8 z-20 max-w-md translate-x-0 pointer-events-auto bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md p-5 rounded-2xl border border-[#141316]/20 dark:border-[#F9F6F0]/20 shadow-[4px_4px_0px_0px_#141316] dark:shadow-[4px_4px_0px_0px_#FF425E] transition-all">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-[#141316] text-[#F9F6F0] dark:bg-[#F9F6F0] dark:text-[#141316] font-extrabold border border-[#141316]">
-              {activeItem.indexLabel} / {activeItem.category}
-            </span>
-            <span
-              className="font-mono text-xs font-bold px-3 py-1 rounded-full text-[#141316] border border-[#141316]/25"
-              style={{ backgroundColor: activeItem.accentColor || '#F3A72E' }}
-            >
-              {activeItem.metricsBadge}
-            </span>
-          </div>
+      {/* Layered Wavy Rolling Green Hills with Flowers */}
+      <RollingGreenHills />
 
-          <h2 className="text-xl md:text-2xl font-black text-[var(--text-primary)] tracking-tight leading-snug">
-            {activeItem.title}
-          </h2>
+      {/* Bottom Left Card Style Configuration Toggle (Clean Comic vs Holo Foil) */}
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute bottom-8 left-4 md:left-12 z-30 flex items-center gap-1.5 bg-white border-2 border-[#211529] shadow-[3px_3px_0px_#211529] px-2.5 py-1.5 rounded-full text-xs font-bold text-[#211529] pointer-events-auto select-none"
+      >
+        <span className="hidden sm:inline text-[10px] tracking-wider uppercase font-black text-[#211529]/60 px-1">
+          Card Style:
+        </span>
+        <button
+          type="button"
+          onClick={() => setGlitterEnabled(false)}
+          className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+            !glitterEnabled
+              ? 'bg-[#FFD400] text-[#211529] border border-[#211529] shadow-[1px_1px_0px_#211529]'
+              : 'text-[#211529]/70 hover:text-[#211529]'
+          }`}
+          title="Switch to Clean Comic presentation (Original Hand-drawn Art)"
+        >
+          ✿ Clean Comic
+        </button>
+        <button
+          type="button"
+          onClick={() => setGlitterEnabled(true)}
+          className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+            glitterEnabled
+              ? 'bg-[#FF66B2] text-white border border-[#211529] shadow-[1px_1px_0px_#211529]'
+              : 'text-[#211529]/70 hover:text-[#211529]'
+          }`}
+          title="Switch to Holographic Glitter Foil card effect"
+        >
+          ✨ Holo Foil
+        </button>
+      </div>
 
-          <p className="text-xs text-[var(--text-muted)] mt-1.5 mb-3 leading-relaxed">
-            Client:{' '}
-            <a
-              href={activeItem.clientUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="underline font-bold text-[#141316] dark:text-[#F9F6F0] hover:text-[#FF425E] transition-colors"
-            >
-              {activeItem.client}
-            </a>{' '}
-            · Illustrated by{' '}
-            <a
-              href={`/artists#${activeItem.artistId}`}
-              className="underline font-bold text-[#141316] dark:text-[#F9F6F0] hover:text-[#FF425E] transition-colors"
-            >
-              {activeItem.artistName} (Epiphrame Collective)
-            </a>
-          </p>
-
-          <a
-            href={`#campaign-${activeItem.id}`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF425E] text-white text-xs font-mono font-extrabold tracking-wider border border-[#141316] shadow-[2px_2px_0px_0px_#141316] hover:bg-[#E8334E] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-          >
-            VIEW CAMPAIGN ↗
-          </a>
-        </div>
-      )}
-
-      {/* Bottom Right Interactive Card Navigator anchored absolutely inside Hero */}
-      <div className="absolute bottom-8 right-16 z-20 flex items-center gap-2 bg-[#FFFFFF]/95 dark:bg-[#1E1C22]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#141316]/20 dark:border-[#F9F6F0]/25 shadow-[3px_3px_0px_0px_#141316] dark:shadow-[3px_3px_0px_0px_#FF425E] font-mono text-xs text-[var(--text-muted)] pointer-events-auto">
+      {/* Bottom Right Interactive Card Navigator */}
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute bottom-8 right-4 md:right-12 z-30 flex items-center gap-2 bg-white border-2 border-[#211529] shadow-[3px_3px_0px_#211529] px-4 py-2 rounded-full font-mono text-xs text-[#211529] pointer-events-auto select-none"
+      >
         <button
           type="button"
           onClick={() => handleNavigate('prev')}
-          className="p-1.5 rounded-full hover:bg-[#FF425E] hover:text-white text-[var(--text-primary)] transition-colors active:scale-90"
+          className="p-1.5 rounded-full hover:bg-[#FFD400] text-[#211529] transition-colors active:scale-90 cursor-pointer"
           title="Previous Card"
           aria-label="Previous card in 3D ring"
         >
@@ -864,11 +1368,11 @@ export default function CircularRingHero() {
         <span className="font-black text-[#FF425E] px-1 text-sm">
           {activeItem ? activeItem.indexLabel : '01'}
         </span>
-        <span className="font-bold text-[var(--text-primary)]">/ 08</span>
+        <span className="font-bold text-[#211529]">/ 08</span>
         <button
           type="button"
           onClick={() => handleNavigate('next')}
-          className="p-1.5 rounded-full hover:bg-[#FF425E] hover:text-white text-[var(--text-primary)] transition-colors active:scale-90"
+          className="p-1.5 rounded-full hover:bg-[#FFD400] text-[#211529] transition-colors active:scale-90 cursor-pointer"
           title="Next Card"
           aria-label="Next card in 3D ring"
         >
