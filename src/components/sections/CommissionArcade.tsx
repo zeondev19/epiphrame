@@ -5,17 +5,17 @@ import { z } from 'zod';
 import { Send, CheckCircle2, RefreshCw, AlertCircle } from 'lucide-react';
 
 const DELIVERABLE_OPTIONS = [
-  '9:16 TikTok/Reels Video Ad',
-  'Character IP & Expression Sheet',
-  'Animated GIF / Discord Sticker Pack',
+  'Vertical UA Hooks (TikTok/Reels)',
+  'Roleplay Bot Turnarounds',
+  'Community & Discord Reactions',
   'App Store Feature Banner',
 ];
 
 const ARTIST_OPTIONS = [
   { id: 'any', label: 'Any Collective Artist' },
-  { id: 'iris', label: 'Iris (Quirky Pop & Color)' },
+  { id: 'iris', label: 'Iris (Art Director & Pop Lead)' },
   { id: 'raka', label: 'Raka (60fps Motion & Live2D)' },
-  { id: 'nadia', label: 'Nadia (Webtoon & Romance Hook)' },
+  { id: 'nadia', label: 'Nadia (Webtoon & Expression Specialist)' },
   { id: 'bima', label: 'Bima (World & Key Art)' },
 ];
 
@@ -121,16 +121,20 @@ export function CommissionArcade() {
       <div className="max-w-4xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-[#211529] tracking-tight">
+          <div className="tracking-[0.2em] uppercase text-xs font-semibold text-[#FF425E] mb-2 flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#FF425E]" />
+            COMMISSION BRIEF ARCADE
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black font-syne text-[#211529] tracking-tighter">
             Say Hi! ✿
           </h2>
-          <p className="text-base text-[#5A5560] mt-3 max-w-xl mx-auto">
+          <p className="font-sans text-base text-[#5A5560] mt-3 max-w-xl mx-auto leading-relaxed">
             Tell us about your project. We&apos;ll get back with a proposal within 48 hours.
           </p>
         </div>
 
-        {/* Card Form Wrapper */}
-        <div className="rounded-3xl bg-white border-2 border-[#211529] p-8 sm:p-12 shadow-[6px_6px_0px_#211529] relative">
+        {/* Card Form Wrapper with Subtle Glassmorphic Border and Multi-Layered Soft Shadow */}
+        <div className="rounded-3xl bg-white/90 backdrop-blur-md border border-white/40 p-8 sm:p-12 shadow-soft-2 relative">
           {isSuccess ? (
             /* Success Confirmation State */
             <div className="py-12 text-center flex flex-col items-center">

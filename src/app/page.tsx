@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Lenis from 'lenis';
 import { Navbar } from '@/components/layout/Navbar';
+import { WhyHumanArt } from '@/components/sections/WhyHumanArt';
 import { DeliverablesShowcase } from '@/components/sections/DeliverablesShowcase';
 import { ArtistCollectiveStrip } from '@/components/sections/ArtistCollectiveStrip';
 import { CommissionArcade } from '@/components/sections/CommissionArcade';
@@ -15,7 +16,7 @@ const CircularRingHero = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-screen bg-gradient-to-b from-[#1388E5] via-[#80B0E8] to-[#F6EDE4] flex items-center justify-center font-bold text-xl text-[#FFD400] drop-shadow-[0_3px_0_#211529]">
+      <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 via-blue-50 to-white flex items-center justify-center font-bold text-xl text-slate-800">
         epiphrame
       </div>
     ),
@@ -54,20 +55,23 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--bg-surface)] text-[var(--text-primary)] relative">
-      {/* Playful transparent navbar overlaying the sky */}
+    <main className="min-h-screen bg-[var(--bg-surface)] text-[var(--text-primary)] relative studio-canvas-grain">
+      {/* Top Navbar */}
       <Navbar onOpenInquiry={() => handleOpenInquiry()} />
 
-      {/* Hero Section: Sky World + 3D Ring */}
+      {/* Hero Section: Sky World + 3D Ring with Anti-AI Direct Proposition */}
       <CircularRingHero />
 
-      {/* Our Drawings Showcase */}
+      {/* Section 01: Character Lab & Human Craft (anchor #character-lab) */}
+      <WhyHumanArt />
+
+      {/* Section 02: Deliverables Showcase (anchor #showcase) */}
       <DeliverablesShowcase />
 
-      {/* Meet The Artists */}
+      {/* Section 03: Resident Artists Roster (anchor #playground) */}
       <ArtistCollectiveStrip />
 
-      {/* Say Hi - Commission Form */}
+      {/* Section 04: Commission Brief Arcade (anchor #contact) */}
       <CommissionArcade />
 
       {/* Footer */}

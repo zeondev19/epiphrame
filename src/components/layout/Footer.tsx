@@ -38,8 +38,8 @@ export function Footer({ onOpenInquiry }: FooterProps) {
             </h4>
             <ul className="space-y-2.5 font-mono text-xs">
               <li>
-                <Link href="/#process" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
-                  01 / STUDIO PIPELINE
+                <Link href="/#character-lab" className="text-[var(--text-muted)] hover:text-[#FF425E] transition-colors font-bold">
+                  01 / CHARACTER LAB
                 </Link>
               </li>
               <li>

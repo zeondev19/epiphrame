@@ -33,16 +33,19 @@ function CampaignVideoPlayer({ src, posterSrc, title }: { src: string; posterSrc
     <>
       <video
         ref={videoRef}
-        src={src}
-        poster={posterSrc}
-        playsInline
-        muted={isMuted}
         loop
+        muted={isMuted}
+        playsInline
+        poster={posterSrc}
+        preload="none"
         autoPlay
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-      />
+      >
+        <source src={src.replace(/\.mp4$/, '.webm')} type="video/webm" />
+        <source src={src.replace(/\.webm$/, '.mp4')} type="video/mp4" />
+      </video>
       <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
         <button
           type="button"

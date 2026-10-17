@@ -104,27 +104,27 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
         <Link
           href={isArtists ? '/#showcase' : '#showcase'}
           onClick={(e) => handleNavClick(e, 'showcase')}
-          className="bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
+          className="bg-white/85 backdrop-blur-md text-[#211529] border border-white/40 shadow-soft-1 hover:translate-y-0.5 hover:shadow-soft-2 transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
         >
-          OUR DRAWINGS
+          OUR DELIVERABLES
         </Link>
         <Link
           href="/artists"
-          className="bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
+          className="bg-white/85 backdrop-blur-md text-[#211529] border border-white/40 shadow-soft-1 hover:translate-y-0.5 hover:shadow-soft-2 transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
         >
           MEET THE ARTISTS
         </Link>
         <Link
-          href={isArtists ? '/#playground' : '#playground'}
-          onClick={(e) => handleNavClick(e, 'playground')}
-          className="bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
+          href={isArtists ? '/#character-lab' : '#character-lab'}
+          onClick={(e) => handleNavClick(e, 'character-lab')}
+          className="bg-white/85 backdrop-blur-md text-[#211529] border border-white/40 shadow-soft-1 hover:translate-y-0.5 hover:shadow-soft-2 transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center"
         >
-          PLAYGROUND
+          CHARACTER LAB
         </Link>
         <a
           href={isArtists ? '/#contact' : '#contact'}
           onClick={handleSayHiClick}
-          className="bg-[#FFD400] text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center cursor-pointer"
+          className="bg-[#FFD400] text-[#211529] border border-black/10 shadow-soft-1 hover:translate-y-0.5 hover:shadow-soft-2 transition-all rounded-full px-5 py-2 font-bold text-xs uppercase tracking-wider select-none inline-flex items-center justify-center cursor-pointer"
         >
           SAY HI!
         </a>
@@ -134,7 +134,7 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
       <button
         type="button"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden p-2.5 bg-white text-[#211529] border-2 border-[#211529] rounded-full shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all flex items-center justify-center cursor-pointer"
+        className="md:hidden p-2.5 bg-white/85 backdrop-blur-md text-[#211529] border border-white/40 rounded-full shadow-soft-1 hover:translate-y-0.5 hover:shadow-soft-2 transition-all flex items-center justify-center cursor-pointer"
         aria-label="Toggle navigation menu"
       >
         {mobileMenuOpen ? <X className="w-5 h-5 stroke-[2.5]" /> : <Menu className="w-5 h-5 stroke-[2.5]" />}
@@ -142,32 +142,32 @@ export function Navbar({ onOpenInquiry }: NavbarProps) {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="absolute top-full left-4 right-4 mt-2 bg-white border-2 border-[#211529] rounded-2xl p-4 shadow-[4px_4px_0px_#211529] flex flex-col gap-2.5 md:hidden z-50">
+        <div className="absolute top-full left-4 right-4 mt-2 bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl p-4 shadow-soft-lg flex flex-col gap-2.5 md:hidden z-50">
           <Link
             href={isArtists ? '/#showcase' : '#showcase'}
             onClick={(e) => handleNavClick(e, 'showcase')}
-            className="w-full text-center bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
+            className="w-full text-center bg-white/80 text-[#211529] border border-black/5 shadow-soft-1 hover:translate-y-0.5 transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
           >
-            OUR DRAWINGS
+            OUR DELIVERABLES
           </Link>
           <Link
             href="/artists"
             onClick={() => setMobileMenuOpen(false)}
-            className="w-full text-center bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
+            className="w-full text-center bg-white/80 text-[#211529] border border-black/5 shadow-soft-1 hover:translate-y-0.5 transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
           >
             MEET THE ARTISTS
           </Link>
           <Link
-            href={isArtists ? '/#playground' : '#playground'}
-            onClick={(e) => handleNavClick(e, 'playground')}
-            className="w-full text-center bg-white text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
+            href={isArtists ? '/#character-lab' : '#character-lab'}
+            onClick={(e) => handleNavClick(e, 'character-lab')}
+            className="w-full text-center bg-white/80 text-[#211529] border border-black/5 shadow-soft-1 hover:translate-y-0.5 transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block"
           >
-            PLAYGROUND
+            CHARACTER LAB
           </Link>
           <a
             href={isArtists ? '/#contact' : '#contact'}
             onClick={handleSayHiClick}
-            className="w-full text-center bg-[#FFD400] text-[#211529] border-2 border-[#211529] shadow-[3px_3px_0px_#211529] hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#211529] transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block cursor-pointer"
+            className="w-full text-center bg-[#FFD400] text-[#211529] border border-black/10 shadow-soft-1 hover:translate-y-0.5 transition-all rounded-full px-5 py-2.5 font-bold text-xs uppercase tracking-wider block cursor-pointer"
           >
             SAY HI!
           </a>

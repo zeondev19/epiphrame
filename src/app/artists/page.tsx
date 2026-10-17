@@ -212,14 +212,17 @@ export default function ArtistsPage() {
                   <video
                     ref={videoRef}
                     key={`${selectedArtist.id}-${currentVaultItem.src}`}
-                    src={currentVaultItem.src}
-                    poster={currentVaultItem.posterSrc}
-                    playsInline
                     loop
                     muted={isMuted}
+                    playsInline
+                    poster={currentVaultItem.posterSrc}
+                    preload="none"
                     className="w-full h-full object-cover"
                     onClick={toggleVideo}
-                  />
+                  >
+                    <source src={currentVaultItem.src.replace(/\.mp4$/, '.webm')} type="video/webm" />
+                    <source src={currentVaultItem.src.replace(/\.webm$/, '.mp4')} type="video/mp4" />
+                  </video>
 
                   {/* Center Play Button Overlay */}
                   {!isVideoPlaying && (
@@ -419,12 +422,16 @@ export default function ArtistsPage() {
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-900 mb-4">
                   {item.mediaFormat === 'video' ? (
                     <video
-                      src={item.src}
-                      poster={item.posterSrc}
+                      loop
                       muted
                       playsInline
+                      poster={item.posterSrc}
+                      preload="none"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    >
+                      <source src={item.src.replace(/\.mp4$/, '.webm')} type="video/webm" />
+                      <source src={item.src.replace(/\.webm$/, '.mp4')} type="video/mp4" />
+                    </video>
                   ) : (
                     <img
                       src={item.src}
